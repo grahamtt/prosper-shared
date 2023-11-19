@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "prosper-shared"
-version = "0.1.3"
+version = "0.1.4"
 description = ""
 authors = ["Graham Tibbitts <graham.tibbitts@gmail.com>"]
 license = "Apache 2.0"
@@ -32,8 +32,6 @@ pre-commit = [
     "autohooks.plugins.black",
     "autohooks.plugins.ruff",
     "autohooks.plugins.isort",
-    "prosper_shared.autohooks.pydocstyle",
-    "prosper_shared.autohooks.pydoclint",
     "prosper_shared.autohooks.tomlsort",
     "prosper_shared.autohooks.mdformat",
     "prosper_shared.autohooks.dynamic_versioning",
@@ -46,3 +44,19 @@ metadata = false
 style = "semver"
 vcs = "git"
 bump = true
+
+[tool.autohooks.plugins.ruff]
+arguments = '--fix'
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff.lint]
+extend-ignore = ["E501"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.tomlsort]
+trailing_comma_inline_array = true
+spaces_indent_inline_array = 4
+sort_first = ["tool.poetry"]
