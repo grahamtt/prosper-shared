@@ -1,0 +1,45 @@
+name: "build-and-release"
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  tagged-release: # TODO: Maybe make this conditional so it can run on pull requests
+    name: "Tagged Release"
+    needs: ci
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+      - name: Run image
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: '1.6.1'
+      - name: Install dependencies
+        run: | 
+          poetry self add "poetry-dynamic-versioning[plugin]"
+          poetry install --all-extras
+      - name: Test & publish code coverage
+        uses: paambaati/codeclimate-action@v5.0.0
+        env:
+          CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
+        with:
+          coverageCommand: poetry run pytest
+          coverageLocations: ${{github.workspace}}/dist/coverage.info:lcov
+#      - name: Create Github release
+#        uses: "marvinpinto/action-automatic-releases@latest"
+#        with:
+#          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+#          prerelease: false
+#          files: |
+#            dist/*.whl
+#            dist/*.tar.gz
+      - name: Build and publish package
+        run: poetry publish --build --username __token__ --password ${{ secrets.PYPI_API_TOKEN }}
+        continue-on-error: true
