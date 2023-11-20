@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "prosper-shared"
-version = "0.1.9"
+version = "0.1.10"
 description = ""
 authors = ["Graham Tibbitts <graham.tibbitts@gmail.com>"]
 license = "Apache 2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">3.9,<4.0"
+python = ">=3.9,<4.0"
 autohooks = "^23.10.0"
 autohooks-plugin-black = "^23.10.0"
 autohooks-plugin-pytest = "^23.10.0"
