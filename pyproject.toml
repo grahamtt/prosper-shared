@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "prosper-shared"
-version = "0.1.6"
+version = "0.1.8"
 description = ""
 authors = ["Graham Tibbitts <graham.tibbitts@gmail.com>"]
 license = "Apache 2.0"
@@ -23,6 +23,7 @@ pytest-cov = "^4.1.0"
 pytest-mock = "^3.11.1"
 pytest-sugar = "^0.9.7"
 toml-sort = "^0.23.1"
+tox = "^4.11.3"
 
 
 [build-system]
