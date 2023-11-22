@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "prosper-shared"
-version = "0.1.10"
+version = "0.1.11"
 description = ""
 authors = ["Graham Tibbitts <graham.tibbitts@gmail.com>"]
 license = "Apache 2.0"
