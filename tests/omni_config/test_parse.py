@@ -24,6 +24,20 @@ class TestParse:
             }
         } == toml_config_source.read()
 
+    def test_toml_read_with_config_root(self):
+        toml_config_source = TomlConfigurationSource(
+            join(dirname(__file__), "data", "test_pyproject.toml"), "tool.lib-name"
+        )
+
+        assert {
+            "section1": {
+                "float_config": 123.456,
+                "int_config": 123,
+                "list_config": ["asdf", "qwer"],
+                "string_config": "string value",
+            }
+        } == toml_config_source.read()
+
     def test_toml_read_not_exists(self):
         toml_config_source = TomlConfigurationSource(
             join(dirname(__file__), "non_existent.toml")

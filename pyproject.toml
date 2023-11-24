@@ -27,6 +27,7 @@ tox = "^4.11.3"
 schema = "^0.7.5"
 deepmerge = "^1.1.0"
 toml = "^0.10.2"
+dpath = "^2.1.6"
 
 [build-system]
 requires = ["poetry-core"]

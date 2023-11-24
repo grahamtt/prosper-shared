@@ -5,6 +5,7 @@ import os
 from abc import abstractmethod
 from typing import Dict, List, Union
 
+import dpath
 import toml
 
 
@@ -23,21 +24,42 @@ class ConfigurationSource:
 class TomlConfigurationSource(ConfigurationSource):
     """Configuration source that can read TOML files."""
 
-    def __init__(self, config_file_path):
+    def __init__(self, config_file_path, config_root_path=""):
         """Creates a new TomlConfigurationSource instance."""
         self._config_file_path = config_file_path
+        self._config_root_path = config_root_path
 
     def read(self) -> dict:
         """Reads the given TOML file and extracts the contents into a dict.
 
         Returns:
             dict: The configuration values.
+
+        Raises:
+            ValueError: If the config root path references a terminal value instead of a config tree.
         """
         if not os.path.exists(self._config_file_path):
             return {}
 
         with open(self._config_file_path) as config_file:
-            return toml.load(config_file)
+            config = toml.load(config_file)
+
+        if self._config_root_path:
+            # Find first value matching given root path and replace the config with that value. A little bit hacky,
+            # since it relies on `dpath` always returning the root obj before all the children.
+            _, v = next(
+                dpath.search(
+                    config, self._config_root_path + ".**", separator=".", yielded=True
+                )
+            )
+            config = v
+
+            if not isinstance(config, dict):
+                raise ValueError(
+                    f"Expected to find `dict` at path {self._config_root_path}; found {type(config)} instead."
+                )
+
+        return config
 
 
 class ArgParseSource(ConfigurationSource):
