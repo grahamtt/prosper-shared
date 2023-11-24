@@ -18,11 +18,6 @@ class ConfigKey:
         self._expected_val = expected_val
         self._custom_env_variable_prefix = custom_env_var_prefix
 
-    @property
-    def custom_env_variable_prefix(self) -> Optional[str]:
-        """Getter for custom env variable prefix."""
-        return self._custom_env_variable_prefix
-
     def validate(self, val: str) -> str:
         """Returns the key iff the key is a string value matching the expected value.
 

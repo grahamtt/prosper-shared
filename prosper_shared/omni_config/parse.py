@@ -83,6 +83,7 @@ class ArgParseSource(ConfigurationSource):
         nested_config = {}
 
         for key, val in raw_namespace.__dict__.items():
+            # TODO: This can cause weird behavior if a key is explicitly set to the default value
             if val is None or any(
                 a
                 for a in self._argument_parser._actions
@@ -127,10 +128,10 @@ class EnvironmentVariableSource(ConfigurationSource):
         """
         result = dict()
         value_map: Dict[str, str] = EnvironmentVariableSource.__get_value_map()
-        mapped_variables: List[str] = [
+        matching_variables: List[str] = [
             key for (key, _) in value_map.items() if key.startswith(self.__prefix)
         ]
-        for key in mapped_variables:
+        for key in matching_variables:
             value = value_map[key]
             sanitized: List[str] = self.__sanitize_key(key)
             items: dict = result
@@ -149,43 +150,13 @@ class EnvironmentVariableSource(ConfigurationSource):
 
     @staticmethod
     def __get_value_map() -> Dict[str, str]:
-        """Gets a list of key-value-pairs representing the environment variables.
-
-        Returns:
-            Dict[str, str]: The key-value map.
-        """
         return os.environ.copy()
 
     def __sanitize_key(self, key: str) -> List[str]:
-        """Splits a key according to the specified separators.
-
-        Args:
-            key (str): The key to split into lists.
-
-        Returns:
-            List[str]: The list of split keys.
-        """
-        if key is not None:
-            if key.startswith(self.__prefix):
-                key = key[len(self.__prefix) + 1 :]
-
-            return key.split(self.__separator)
-
-        return [key]
+        return key[len(self.__prefix) + 1 :].split(self.__separator)
 
     def __sanitize_value(self, value: str) -> Union[str, List[str]]:
-        """Splits a value into a list, if applicable.
+        if self.__list_item_separator in value:
+            return value.split(self.__list_item_separator)
 
-        Args:
-            value (str): The value to parse.
-
-        Returns:
-            Union[str, List[str]]: The value parsed.
-        """
-        if value is not None:
-            if self.__list_item_separator in value:
-                return value.split(self.__list_item_separator)
-
-            return value
-
-        return ""
+        return value

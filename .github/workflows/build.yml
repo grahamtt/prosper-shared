@@ -1,9 +1,10 @@
-name: "build-and-release"
+name: "build"
 
 on:
   push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   ci:
@@ -38,8 +39,8 @@ jobs:
       - name: Run tests
         run: poetry run pytest
 
-  tagged-release: # TODO: Maybe make this conditional so it can run on pull requests
-    name: "Tagged Release"
+  code-coverage: # TODO: Maybe make this conditional so it can run on pull requests
+    name: "Code coverage"
     needs: ci
     runs-on: "ubuntu-latest"
 
@@ -56,7 +57,7 @@ jobs:
       - name: Install dependencies
         run: | 
           poetry self add "poetry-dynamic-versioning[plugin]"
-          poetry install --all-extras
+          poetry install --without dev --with test --all-extras
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v5.0.0
         env:
@@ -64,13 +65,3 @@ jobs:
         with:
           coverageCommand: poetry run pytest
           coverageLocations: ${{github.workspace}}/dist/coverage.info:lcov
-      - name: Create Github release
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.RELEASE_TOKEN }}"
-          prerelease: false
-          files: |
-            dist/*.whl
-            dist/*.tar.gz
-      - name: Build and publish package
-        run: poetry publish --build --username __token__ --password ${{ secrets.PYPI_API_TOKEN }}
