@@ -24,6 +24,13 @@ class TestParse:
             }
         } == toml_config_source.read()
 
+    def test_toml_read_not_exists(self):
+        toml_config_source = TomlConfigurationSource(
+            join(dirname(__file__), "non_existent.toml")
+        )
+
+        assert {} == toml_config_source.read()
+
     def test_env_read(self, monkeypatch):
         monkeypatch.setenv("TEST_PARSE_SECTION1__FLOAT_CONFIG", "123.456")
         monkeypatch.setenv("TEST_PARSE_SECTION1__INT_CONFIG", "123")

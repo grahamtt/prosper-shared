@@ -33,6 +33,9 @@ class TomlConfigurationSource(ConfigurationSource):
         Returns:
             dict: The configuration values.
         """
+        if not os.path.exists(self._config_file_path):
+            return {}
+
         with open(self._config_file_path) as config_file:
             return toml.load(config_file)
 
