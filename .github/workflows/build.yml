@@ -56,8 +56,7 @@ jobs:
           poetry-version: '1.6.1'
       - name: Install dependencies
         run: | 
-          poetry self add "poetry-dynamic-versioning[plugin]"
-          poetry install --without dev --with test --all-extras
+          poetry install --all-extras
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v5.0.0
         env:
