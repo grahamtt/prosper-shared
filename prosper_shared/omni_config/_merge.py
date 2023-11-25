@@ -5,7 +5,7 @@ from typing import List
 from deepmerge import always_merger
 
 
-def merge_config(configs: List[dict]) -> dict:
+def _merge_config(configs: List[dict]) -> dict:
     """Compiles all the config sources into a single config.
 
     Args:

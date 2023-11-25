@@ -1,0 +1,8 @@
+{
+  "section1": {
+    "string_config": "string value",
+    "int_config": 123,
+    "float_config": 123.456,
+    "list_config": ["asdf","qwer"]
+  }
+}

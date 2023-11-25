@@ -6,10 +6,9 @@ from abc import abstractmethod
 from typing import Dict, List, Union
 
 import dpath
-import toml
 
 
-class ConfigurationSource:
+class _ConfigurationSource:
     """Basic definition of an arbitrary configuration source."""
 
     @abstractmethod
@@ -21,16 +20,13 @@ class ConfigurationSource:
         """
 
 
-class TomlConfigurationSource(ConfigurationSource):
-    """Configuration source that can read TOML files."""
-
-    def __init__(self, config_file_path, config_root_path=""):
-        """Creates a new TomlConfigurationSource instance."""
+class _FileConfigurationSource(_ConfigurationSource):
+    def __init__(self, config_file_path, config_root=""):
         self._config_file_path = config_file_path
-        self._config_root_path = config_root_path
+        self._config_root = config_root
 
     def read(self) -> dict:
-        """Reads the given TOML file and extracts the contents into a dict.
+        """Reads the given file and extracts the contents into a dict. It returns the subtree rooted at `config_root`.
 
         Returns:
             dict: The configuration values.
@@ -41,28 +37,69 @@ class TomlConfigurationSource(ConfigurationSource):
         if not os.path.exists(self._config_file_path):
             return {}
 
-        with open(self._config_file_path) as config_file:
-            config = toml.load(config_file)
+        config = self._read_file(self._config_file_path)
 
-        if self._config_root_path:
+        if self._config_root:
             # Find first value matching given root path and replace the config with that value. A little bit hacky,
             # since it relies on `dpath` always returning the root obj before all the children.
             _, v = next(
                 dpath.search(
-                    config, self._config_root_path + ".**", separator=".", yielded=True
+                    config, self._config_root + ".**", separator=".", yielded=True
                 )
             )
             config = v
 
             if not isinstance(config, dict):
                 raise ValueError(
-                    f"Expected to find `dict` at path {self._config_root_path}; found {type(config)} instead."
+                    f"Expected to find `dict` at path {self._config_root}; found {type(config)} instead."
                 )
 
         return config
 
+    @abstractmethod
+    def _read_file(self, file_path: str) -> dict:
+        """Reads the given file and extracts the contents into a dict.
 
-class ArgParseSource(ConfigurationSource):
+        Args:
+            file_path (str): The path to the config file.
+
+        Returns:
+            dict: The configuration values.
+        """
+        pass
+
+
+class _TomlConfigurationSource(_FileConfigurationSource):
+    """Configuration source that can read TOML files."""
+
+    def _read_file(self, file_path) -> dict:
+        import toml  # noqa: autoimport
+
+        with open(self._config_file_path) as config_file:
+            return toml.load(config_file)
+
+
+class _JsonConfigurationSource(_FileConfigurationSource):
+    """Configuration source that can read JSON files."""
+
+    def _read_file(self, file_path) -> dict:
+        import json  # noqa: autoimport
+
+        with open(self._config_file_path) as config_file:
+            return json.load(config_file)
+
+
+class _YamlConfigurationSource(_FileConfigurationSource):
+    """Configuration source that can read YAML files."""
+
+    def _read_file(self, file_path) -> dict:
+        import yaml  # noqa: autoimport
+
+        with open(self._config_file_path) as config_file:
+            return yaml.safe_load(config_file)
+
+
+class _ArgParseSource(_ConfigurationSource):
     """ArgParse source that merges the values with the other config."""
 
     def __init__(self, argument_parser: argparse.ArgumentParser):
@@ -101,7 +138,7 @@ class ArgParseSource(ConfigurationSource):
         return nested_config
 
 
-class EnvironmentVariableSource(ConfigurationSource):
+class _EnvironmentVariableSource(_ConfigurationSource):
     """A configuration source for environment variables."""
 
     def __init__(
@@ -127,7 +164,7 @@ class EnvironmentVariableSource(ConfigurationSource):
             dict: The mapped environment variables.
         """
         result = dict()
-        value_map: Dict[str, str] = EnvironmentVariableSource.__get_value_map()
+        value_map: Dict[str, str] = _EnvironmentVariableSource.__get_value_map()
         matching_variables: List[str] = [
             key for (key, _) in value_map.items() if key.startswith(self.__prefix)
         ]

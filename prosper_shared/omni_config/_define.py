@@ -1,22 +1,22 @@
 """Contains utility methods and classes for defining a config schema."""
 
-from typing import Optional
+from typing import Callable, Dict, List, Optional, Union
 
 from schema import SchemaError, SchemaWrongKeyError
 
 
-class ConfigKey:
+class _ConfigKey:
     """Defines a valid schema config key."""
 
-    def __init__(self, expected_val: str, custom_env_var_prefix: Optional[str] = None):
+    def __init__(self, expected_val: str, prefix: Optional[str] = None):
         """Creates a ConfigKey instance.
 
         Arguments:
             expected_val (str): The expected key for this config entry.
-            custom_env_var_prefix (Optional[str]): Prefix for environment variables rooted at this subtree.
+            prefix (Optional[str]): Prefix for environment variables rooted at this subtree.
         """
         self._expected_val = expected_val
-        self._custom_env_variable_prefix = custom_env_var_prefix
+        self._custom_env_variable_prefix = prefix
 
     def validate(self, val: str) -> str:
         """Returns the key iff the key is a string value matching the expected value.
@@ -47,3 +47,31 @@ class ConfigKey:
             )
 
         return val
+
+
+_SchemaType = Dict[Union[str, _ConfigKey], Union[str, int, float, dict, list, bool]]
+
+_config_registry = []
+
+
+def _config(raw_schema_func: Callable[[], _SchemaType]) -> Callable[[], _SchemaType]:
+    _config_registry.append(raw_schema_func)
+    return raw_schema_func
+
+
+def _realize_configs() -> List[_SchemaType]:
+    return [c() for c in _config_registry]
+
+
+_InputType = Dict[str, str]
+
+_input_registry = []
+
+
+def _inputs(raw_schema_func: Callable[[], _InputType]) -> Callable[[], _InputType]:
+    _input_registry.append(raw_schema_func)
+    return raw_schema_func
+
+
+def _realize_inputs() -> List[_InputType]:
+    return [i() for i in _input_registry]

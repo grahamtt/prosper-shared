@@ -28,11 +28,14 @@ tox = { version = "^4.11.3", optional = true }
 
 deepmerge = "^1.1.0"
 dpath = "^2.1.6"
+pyyaml = {version = "^6.0.1", optional = true }
 schema = "^0.7.5"
-toml = "^0.10.2"
+toml = {version= "^0.10.2", optional = true }
 
 [tool.poetry.extras]
 dev = ["autohooks", "autohooks-plugin-black", "autohooks-plugin-pytest", "autohooks-plugin-isort", "autohooks-plugin-ruff", "autoimport", "mdformat-gfm", "mutmut", "pydocstyle", "pydoclint", "pytest", "pytest-cov", "pytest-mock", "pytest-sugar", "toml-sort", "tox"]
+toml = ['toml']
+yaml = ['pyyaml']
 
 [build-system]
 requires = ["poetry-core"]
@@ -70,11 +73,15 @@ arguments = [
     "--disable-mutation-types=string,fstring,expr_stmt,annassign,number", '--CI',
 ]
 
+[tool.autohooks.plugins.autoimport]
+#ignore_init_modules = true
+arguments = ["--ignore-init-modules"]
+
 [tool.isort]
 profile = "black"
 
 [tool.ruff.lint]
-extend-ignore = ["E501"]
+extend-ignore = ["E501", "F401"]
 fixable = ["ALL"]
 unfixable = []
 

@@ -4,10 +4,13 @@ from os.path import dirname, join
 
 import pytest
 
-from prosper_shared.omni_config.parse import (
+from prosper_shared.omni_config import (
     ArgParseSource,
     EnvironmentVariableSource,
+    FileConfigurationSource,
+    JsonConfigurationSource,
     TomlConfigurationSource,
+    YamlConfigurationSource,
 )
 
 
@@ -55,6 +58,41 @@ class TestParse:
         )
 
         assert {} == toml_config_source.read()
+
+    def test_json_read(self):
+        json_config_source = JsonConfigurationSource(
+            join(dirname(__file__), "data", "test_parse.json")
+        )
+
+        assert {
+            "section1": {
+                "float_config": 123.456,
+                "int_config": 123,
+                "list_config": ["asdf", "qwer"],
+                "string_config": "string value",
+            }
+        } == json_config_source.read()
+
+    def test_yaml_read(self):
+        yaml_config_source = YamlConfigurationSource(
+            join(dirname(__file__), "data", "test_parse.yaml")
+        )
+
+        assert {
+            "section1": {
+                "float_config": 123.456,
+                "int_config": 123,
+                "list_config": ["asdf", "qwer"],
+                "string_config": "string value",
+            }
+        } == yaml_config_source.read()
+
+    def test_abstract_file_read(self):
+        yaml_config_source = FileConfigurationSource(
+            join(dirname(__file__), "data", "test_parse.yaml")
+        )
+
+        assert yaml_config_source.read() is None
 
     def test_env_read(self, monkeypatch):
         monkeypatch.setenv("TEST_PARSE_SECTION1__FLOAT_CONFIG", "123.456")

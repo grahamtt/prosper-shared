@@ -1,6 +1,6 @@
 import pytest
 
-from prosper_shared.omni_config.merge import merge_config
+from prosper_shared.omni_config import merge_config
 
 
 class TestMerge:
