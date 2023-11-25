@@ -2,6 +2,7 @@
 
 from typing import Callable, Dict, List, Optional, Union
 
+from schema import Optional as SchemaOptional
 from schema import SchemaError, SchemaWrongKeyError
 
 
@@ -49,7 +50,10 @@ class _ConfigKey:
         return val
 
 
-_SchemaType = Dict[Union[str, _ConfigKey], Union[str, int, float, dict, list, bool]]
+_SchemaType = Dict[
+    Union[str, _ConfigKey, SchemaOptional],
+    Union[str, int, float, dict, list, bool, "_SchemaType"],
+]
 
 _config_registry = []
 
