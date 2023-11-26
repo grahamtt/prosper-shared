@@ -7,10 +7,10 @@ from prosper_shared.omni_config import (
     ConfigKey,
     InputType,
     SchemaType,
-    config,
-    inputs,
-    realize_configs,
-    realize_inputs,
+    config_schema,
+    input_schema,
+    realize_config_schemata,
+    realize_input_schemata,
 )
 
 
@@ -61,15 +61,15 @@ class TestDefine:
     }
 
     def test_realize_configs(self):
-        @config
+        @config_schema
         def config_method() -> SchemaType:
             return self.TEST_SCHEMA
 
-        assert realize_configs() == [self.TEST_SCHEMA]
+        assert realize_config_schemata() == [self.TEST_SCHEMA]
 
     def test_realize_inputs(self):
-        @inputs
+        @input_schema
         def input_method() -> InputType:
             return self.TEST_INPUTS
 
-        assert realize_inputs() == [self.TEST_INPUTS]
+        assert realize_input_schemata() == [self.TEST_INPUTS]

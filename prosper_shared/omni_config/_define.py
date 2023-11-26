@@ -58,12 +58,14 @@ _SchemaType = Dict[
 _config_registry = []
 
 
-def _config(raw_schema_func: Callable[[], _SchemaType]) -> Callable[[], _SchemaType]:
+def _config_schema(
+    raw_schema_func: Callable[[], _SchemaType]
+) -> Callable[[], _SchemaType]:
     _config_registry.append(raw_schema_func)
     return raw_schema_func
 
 
-def _realize_configs() -> List[_SchemaType]:
+def _realize_config_schemata() -> List[_SchemaType]:
     return [c() for c in _config_registry]
 
 
@@ -72,10 +74,12 @@ _InputType = Dict[str, str]
 _input_registry = []
 
 
-def _inputs(raw_schema_func: Callable[[], _InputType]) -> Callable[[], _InputType]:
+def _input_schema(
+    raw_schema_func: Callable[[], _InputType]
+) -> Callable[[], _InputType]:
     _input_registry.append(raw_schema_func)
     return raw_schema_func
 
 
-def _realize_inputs() -> List[_InputType]:
+def _realize_input_schemata() -> List[_InputType]:
     return [i() for i in _input_registry]
