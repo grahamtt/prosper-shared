@@ -133,7 +133,7 @@ class _ArgParseSource(_ConfigurationSource):
                 if key_component not in config_namespace:
                     config_namespace[key_component] = {}
                 config_namespace = config_namespace[key_component]
-            config_namespace[key_components[-1]] = str(val)
+            config_namespace[key_components[-1]] = val
 
         return nested_config
 

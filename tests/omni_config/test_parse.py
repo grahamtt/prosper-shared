@@ -143,9 +143,9 @@ class TestParse:
         )
         assert {
             "section1": {
-                "float_config": "123.456",
-                "int_config": "123",
-                "list_config": "['asdf', 'qwer']",
+                "float_config": 123.456,
+                "int_config": 123,
+                "list_config": ["asdf", "qwer"],
                 "string_config": "string value",
             }
         } == argparse_config_source.read()
