@@ -1,7 +1,8 @@
+import argparse
 from typing import Dict, List
 
 import pytest
-from schema import SchemaError, SchemaWrongKeyError
+from schema import Optional, Regex, SchemaError, SchemaWrongKeyError
 
 from prosper_shared.omni_config import (
     ConfigKey,
@@ -12,6 +13,7 @@ from prosper_shared.omni_config import (
     realize_config_schemata,
     realize_input_schemata,
 )
+from prosper_shared.omni_config._define import _arg_parse_from_schema
 
 
 class TestDefine:
@@ -73,3 +75,35 @@ class TestDefine:
             return self.TEST_INPUTS
 
         assert realize_input_schemata() == [self.TEST_INPUTS]
+
+    def test_arg_parse_from_schema(self):
+        test_schema = {
+            "key1": str,
+            Optional("key2"): int,
+            ConfigKey("key3", "prefix_"): bool,
+            "key4": Regex("regex_value"),
+            "group1": {
+                "gkey1": str,
+                Optional("gkey2"): int,
+                ConfigKey("gkey3", "prefix_"): bool,
+            },
+        }
+
+        actual_arg_parse = _arg_parse_from_schema(test_schema)
+        expect_arg_parse = argparse.ArgumentParser()
+        expect_arg_parse.add_argument("--key1", dest="key1", help="str")
+        expect_arg_parse.add_argument("--key2", dest="key2", help="int")
+        expect_arg_parse.add_argument(
+            "--key3", dest="key3", help="bool", action="store_true"
+        )
+        expect_arg_parse.add_argument(
+            "--key4", dest="key4", help="String matching regex /regex_value/"
+        )
+        expected_group = expect_arg_parse.add_argument_group("group1")
+        expected_group.add_argument("--gkey1", dest="group1__gkey1", help="str")
+        expected_group.add_argument("--gkey2", dest="group1__gkey2", help="int")
+        expected_group.add_argument(
+            "--gkey3", dest="group1__gkey3", help="bool", action="store_true"
+        )
+
+        assert actual_arg_parse.format_help() == expect_arg_parse.format_help()
