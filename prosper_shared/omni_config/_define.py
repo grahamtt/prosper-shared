@@ -124,10 +124,10 @@ class _NullRespectingMetavarTypeHelpFormatter(MetavarTypeHelpFormatter):
     """
 
     def _get_default_metavar_for_optional(self, action):
-        return action.type.__name__ if action.type else None
+        return action.dest if action.dest else action.type.__name__
 
     def _get_default_metavar_for_positional(self, action):
-        return action.type.__name__ if action.type else None
+        return action.dest if action.dest else action.type.__name__
 
 
 def _arg_parse_from_schema(

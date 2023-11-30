@@ -82,7 +82,6 @@ class TestDefine:
 
         assert realize_input_schemata() == [self.TEST_INPUTS]
 
-    @pytest.mark.skip("Can't be done")
     def test_arg_parse_from_schema(self):
         test_schema = {
             "key1": str,
@@ -121,4 +120,23 @@ class TestDefine:
             "--gkey3", dest="group1__gkey3", help="bool", action="store_true"
         )
 
-        assert actual_arg_parse.format_help() == expect_arg_parse.format_help()
+        assert actual_arg_parse.format_help() == (
+            "usage: pytest [-h] [--key1 key1] [--key2 key2] [--key3] [--key4 key4] "
+            "[--key5]\n"
+            "              [--gkey1 group1__gkey1] [--gkey2 group1__gkey2] [--gkey3]\n"
+            "\n"
+            "options:\n"
+            "  -h, --help            show this help message and exit\n"
+            "  --key1 key1           str\n"
+            "  --key2 key2           int\n"
+            "  --key3                bool\n"
+            "  --key4 key4           String matching regex /regex_value/\n"
+            "  --key5                Good value\n"
+            "\n"
+            "group1:\n"
+            "  --gkey1 group1__gkey1\n"
+            "                        str\n"
+            "  --gkey2 group1__gkey2\n"
+            "                        int\n"
+            "  --gkey3               bool\n"
+        )
