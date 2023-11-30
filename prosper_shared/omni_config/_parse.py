@@ -3,9 +3,12 @@
 import argparse
 import os
 from abc import abstractmethod
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import dpath
+from schema import Optional as SchemaOptional
+
+from prosper_shared.omni_config._define import _ConfigKey, _SchemaType
 
 
 class _ConfigurationSource:
@@ -197,3 +200,20 @@ class _EnvironmentVariableSource(_ConfigurationSource):
             return value.split(self.__list_item_separator)
 
         return value
+
+
+def _extract_defaults_from_schema(
+    schema: _SchemaType, defaults: Optional[dict] = None
+) -> dict:
+    if defaults is None:
+        defaults = {}
+
+    if not hasattr(schema, "items"):
+        return defaults
+
+    for k, v in schema.items():
+        if isinstance(k, (SchemaOptional, _ConfigKey)):
+            defaults[k.schema] = k.default if hasattr(k, "default") else None
+            _extract_defaults_from_schema(schema[k], defaults)
+
+    return defaults

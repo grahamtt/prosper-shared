@@ -19,6 +19,9 @@ from prosper_shared.omni_config._parse import (
     _EnvironmentVariableSource as EnvironmentVariableSource,
 )
 from prosper_shared.omni_config._parse import (
+    _extract_defaults_from_schema as extract_defaults_from_schema,
+)
+from prosper_shared.omni_config._parse import (
     _FileConfigurationSource as FileConfigurationSource,
 )
 from prosper_shared.omni_config._parse import (
