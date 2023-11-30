@@ -3,6 +3,7 @@ import sys
 from os.path import dirname, join
 
 import pytest
+from schema import Optional as SchemaOptional
 
 from prosper_shared.omni_config import (
     ArgParseSource,
@@ -11,6 +12,7 @@ from prosper_shared.omni_config import (
     JsonConfigurationSource,
     TomlConfigurationSource,
     YamlConfigurationSource,
+    extract_defaults_from_schema,
 )
 
 
@@ -149,3 +151,18 @@ class TestParse:
                 "string_config": "string value",
             }
         } == argparse_config_source.read()
+
+    @pytest.mark.parametrize(
+        ["schema", "expected_defaults"],
+        (
+            (
+                {SchemaOptional("x", default="y"): str},
+                {"x": "y"},
+            ),
+            ({SchemaOptional("x", default="y"): str}, {"x": "y"}),
+            ({"x": {"z": SchemaOptional("z", default="1")}}, {}),
+            ({"x": {SchemaOptional("z", default=1): int}}, {}),
+        ),
+    )
+    def test_extract_defaults_from_schema(self, schema, expected_defaults):
+        assert extract_defaults_from_schema(schema) == expected_defaults

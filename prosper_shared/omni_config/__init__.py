@@ -1,4 +1,7 @@
 """Utility for declaring, parsing, merging, and validating configs."""
+from prosper_shared.omni_config._define import (
+    _arg_parse_from_schema as arg_parse_from_schema,
+)
 from prosper_shared.omni_config._define import _config_schema as config_schema
 from prosper_shared.omni_config._define import _ConfigKey as ConfigKey
 from prosper_shared.omni_config._define import _input_schema as input_schema
