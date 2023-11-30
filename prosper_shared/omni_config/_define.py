@@ -1,6 +1,7 @@
 """Contains utility methods and classes for defining a config schema."""
 
 import argparse
+from argparse import MetavarTypeHelpFormatter
 from typing import Callable, Dict, List, Optional, Union
 
 from schema import Optional as SchemaOptional
@@ -10,11 +11,14 @@ from schema import Regex, SchemaError, SchemaWrongKeyError
 class _ConfigKey:
     """Defines a valid schema config key."""
 
-    def __init__(self, expected_val: str, prefix: Optional[str] = None):
+    def __init__(
+        self, expected_val: str, description: str, prefix: Optional[str] = None
+    ):
         """Creates a ConfigKey instance.
 
         Arguments:
             expected_val (str): The expected key for this config entry.
+            description (str): The description for this config entry.
             prefix (Optional[str]): Prefix for environment variables rooted at this subtree.
         """
         self._expected_val = expected_val
@@ -55,6 +59,28 @@ class _ConfigKey:
         return self._expected_val
 
 
+class _ConfigValue:
+    """Defines a valid schema config value."""
+
+    def __init__(self, schema: str, description: str):
+        """Creates a ConfigKey instance.
+
+        Arguments:
+            schema (str): The schema for this entry.
+            description (str): The description for this entry.
+        """
+        self._schema = schema
+        self._description = description
+
+    @property
+    def schema(self):
+        return self._schema
+
+    @property
+    def description(self):
+        return self._description
+
+
 _SchemaType = Dict[
     Union[str, _ConfigKey, SchemaOptional],
     Union[str, int, float, dict, list, bool, Regex, "_SchemaType"],
@@ -90,9 +116,27 @@ def _realize_input_schemata() -> List[_InputType]:
     return [i() for i in _input_registry]
 
 
-def _arg_parse_from_schema(schema: _SchemaType) -> argparse.ArgumentParser:
+class _NullRespectingMetavarTypeHelpFormatter(MetavarTypeHelpFormatter):
+    """Help message formatter which uses the argument 'type' as the default metavar value (instead of the argument 'dest').
+
+    Only the name of this class is considered a public API. All the methods
+    provided by the class are considered an implementation detail.
+    """
+
+    def _get_default_metavar_for_optional(self, action):
+        return action.type.__name__ if action.type else None
+
+    def _get_default_metavar_for_positional(self, action):
+        return action.type.__name__ if action.type else None
+
+
+def _arg_parse_from_schema(
+    prog_name: str, schema: _SchemaType
+) -> argparse.ArgumentParser:
     """Really simple schema->argparse converter."""
-    arg_parser = argparse.ArgumentParser()
+    arg_parser = argparse.ArgumentParser(
+        prog_name, formatter_class=_NullRespectingMetavarTypeHelpFormatter
+    )
     _arg_group_from_schema("", schema, arg_parser)
     return arg_parser
 
@@ -109,6 +153,9 @@ def _arg_group_from_schema(path: str, schema: _SchemaType, arg_group) -> None:
             if isinstance(v, Regex):
                 help_str = f"String matching regex /{v.pattern_str}/"
                 v = str
+            elif isinstance(v, _ConfigValue):
+                help_str = v.description
+                v = v.schema
             else:
                 help_str = v.__name__
             kwargs = {
