@@ -91,7 +91,7 @@ spaces_indent_inline_array = 4
 sort_first = ["tool.poetry"]
 
 [tool.pytest.ini_options]
-#addopts = "--cov=prosper_shared/omni_config --cov-report=term-missing --cov-report=lcov:dist/coverage.info --cov-fail-under=100"
+addopts = "--cov=prosper_shared/omni_config --cov-report=term-missing --cov-report=lcov:dist/coverage.info --cov-fail-under=100"
 testpaths = "tests"
 python_functions = ["*_test", "test_*"]
 
