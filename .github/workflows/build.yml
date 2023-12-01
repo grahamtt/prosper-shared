@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: poetry install --all-extras
       - name: Run tests
-        run: poetry run pytest
+        run: poetry run pytest --no-cov
 
   code-coverage: # TODO: Maybe make this conditional so it can run on pull requests
     name: "Code coverage"
