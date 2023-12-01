@@ -1,4 +1,4 @@
-import argparse
+import sys
 from typing import Dict, List
 
 import pytest
@@ -14,10 +14,7 @@ from prosper_shared.omni_config import (
     realize_config_schemata,
     realize_input_schemata,
 )
-from prosper_shared.omni_config._define import (
-    _arg_parse_from_schema,
-    _NullRespectingMetavarTypeHelpFormatter,
-)
+from prosper_shared.omni_config._define import _arg_parse_from_schema
 
 
 class TestDefine:
@@ -82,6 +79,9 @@ class TestDefine:
 
         assert realize_input_schemata() == [self.TEST_INPUTS]
 
+    @pytest.mark.skipif(
+        sys.version_info <= (3, 9), reason="Argparse behavior changes after 3.9"
+    )
     def test_arg_parse_from_schema(self):
         test_schema = {
             "key1": str,
@@ -99,26 +99,6 @@ class TestDefine:
         }
 
         actual_arg_parse = _arg_parse_from_schema("pytest", test_schema)
-        expect_arg_parse = argparse.ArgumentParser(
-            prog="pytest", formatter_class=_NullRespectingMetavarTypeHelpFormatter
-        )
-        expect_arg_parse.add_argument("--key1", dest="key1", help="str")
-        expect_arg_parse.add_argument("--key2", dest="key2", help="int")
-        expect_arg_parse.add_argument(
-            "--key3", dest="key3", help="bool", action="store_true"
-        )
-        expect_arg_parse.add_argument(
-            "--key4", dest="key4", help="String matching regex /regex_value/"
-        )
-        expect_arg_parse.add_argument(
-            "--key5", dest="key5", help="String matching regex /regex_value/"
-        )
-        expected_group = expect_arg_parse.add_argument_group("group1")
-        expected_group.add_argument("--gkey1", dest="group1__gkey1", help="str")
-        expected_group.add_argument("--gkey2", dest="group1__gkey2", help="int")
-        expected_group.add_argument(
-            "--gkey3", dest="group1__gkey3", help="bool", action="store_true"
-        )
 
         assert actual_arg_parse.format_help() == (
             "usage: pytest [-h] [--key1 key1] [--key2 key2] [--key3] [--key4 key4] "
