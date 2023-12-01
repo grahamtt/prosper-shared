@@ -80,7 +80,7 @@ class TestDefine:
         assert realize_input_schemata() == [self.TEST_INPUTS]
 
     @pytest.mark.skipif(
-        sys.version_info <= (3, 9), reason="Argparse behavior changes after 3.9"
+        sys.version_info < (3, 10), reason="Argparse behavior changes after 3.9"
     )
     def test_arg_parse_from_schema(self):
         test_schema = {
