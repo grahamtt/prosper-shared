@@ -44,6 +44,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.autohooks]
 mode = "poetry"
 pre-commit = [
+    "prosper_shared.autohooks.clean",
     "prosper_shared.autohooks.autoimport",
     "autohooks.plugins.black",
     "autohooks.plugins.ruff",
@@ -56,6 +57,8 @@ pre-commit = [
     # "autohooks.tox", # Commenting out for now because it appears to be running only for Python 3.10
     "prosper_shared.autohooks.mutmut",
     # "prosper_shared.autohooks.dynamic_versioning", # Disabling for now until I figure out how to apply to the current commit.
+    "prosper_shared.autohooks.build",
+    "prosper_shared.autohooks.assert_files",
 ]
 
 [tool.poetry-dynamic-versioning]
