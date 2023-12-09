@@ -120,3 +120,11 @@ class TestDefine:
             "                        int\n"
             "  --gkey3               bool\n"
         )
+
+    def test_arg_parse_from_schema_if_type_not_callable(self):
+        test_schema = {
+            "key1": "value",
+        }
+
+        with pytest.raises(ValueError):
+            _arg_parse_from_schema("pytest", test_schema)

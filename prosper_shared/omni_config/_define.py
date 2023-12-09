@@ -100,7 +100,10 @@ def _realize_config_schemata() -> List[_SchemaType]:
     return [c() for c in _config_registry]
 
 
-_InputType = Dict[str, str]
+_InputType = Dict[
+    Union[str, _ConfigKey, SchemaOptional],
+    Union[str, int, float, dict, list, bool, Regex, "_SchemaType"],
+]
 
 _input_registry = []
 
@@ -153,8 +156,11 @@ def _arg_group_from_schema(path: str, schema: _SchemaType, arg_group) -> None:
             elif isinstance(v, _ConfigValue):
                 help_str = v.description
                 v = v.schema
-            else:
+            elif callable(v):
                 help_str = v.__name__
+            else:
+                raise ValueError(f"Invalid config value type: {type(v)}")
+
             kwargs = {
                 "dest": f"{path}__{k}" if path else k,
                 "help": help_str,
