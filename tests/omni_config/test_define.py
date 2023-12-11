@@ -25,18 +25,19 @@ class TestDefine:
         assert ConfigKey(key, description).validate(key) == key
 
     @pytest.mark.parametrize(
-        ["expected_key", "given_key", "exception_type"],
+        ["given_schema", "given_key", "expected_exception"],
         [
             ("valid_key", "invalid_key", SchemaWrongKeyError),
             ("valid_key", 123, SchemaError),
+            (1, 1, SchemaError),
             ("", "", SchemaError),
         ],
     )
     def test_config_key_validate_negative(
-        self, expected_key, given_key, exception_type
+        self, given_schema, given_key, expected_exception
     ):
-        with pytest.raises(exception_type):
-            ConfigKey(expected_key, "description").validate(given_key)
+        with pytest.raises(expected_exception):
+            ConfigKey(given_schema, "description").validate(given_key)
 
     TEST_SCHEMA = {
         ConfigKey("section1", "prefix"): {

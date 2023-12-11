@@ -231,8 +231,10 @@ def _kebab_case_to_upper_train_case(name: str) -> str:
 
 
 def _has_yaml():
+    """Tests whether the 'yaml' package is available."""
     return find_spec("yaml")
 
 
 def _has_toml():
+    """Tests whether the 'toml' package is available."""
     return find_spec("toml")
