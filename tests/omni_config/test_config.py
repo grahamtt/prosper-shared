@@ -1,4 +1,5 @@
 from decimal import Decimal
+from enum import Enum
 from os import getcwd
 from os.path import join
 
@@ -39,6 +40,10 @@ TEST_SCHEMA = {
         "testDecimalFloat": 123.456,
     }
 }
+
+
+class TestEnum(Enum):
+    KEY = "value"
 
 
 class TestConfig:
@@ -83,6 +88,26 @@ class TestConfig:
         assert config.get_as_decimal(
             "testSection.testDecimalNotFound", Decimal("0")
         ) == Decimal("0")
+
+    @pytest.mark.parametrize(
+        ["config_value", "given_default", "expected_value"],
+        [
+            ("KEY", None, TestEnum.KEY),
+            ("value", None, TestEnum.KEY),
+            (None, TestEnum.KEY, TestEnum.KEY),
+        ],
+    )
+    def test_get_as_enum_happy(self, config_value, given_default, expected_value):
+        config = Config(config_dict={"enum_config": config_value})
+        actual_value = config.get_as_enum(
+            "enum_config", TestEnum, default=given_default
+        )
+        assert actual_value == expected_value
+
+    def test_get_as_enum_unhappy(self):
+        config = Config(config_dict={"enum_config": "BAD_KEY"})
+        with pytest.raises(ValueError):
+            config.get_as_enum("enum_config", TestEnum)
 
     def test_get_invalid_key(self):
         config = Config(config_dict=TEST_CONFIG)

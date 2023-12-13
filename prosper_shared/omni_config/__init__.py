@@ -2,11 +2,12 @@
 import argparse
 from copy import deepcopy
 from decimal import Decimal
+from enum import Enum, EnumMeta
 from importlib.util import find_spec
 from numbers import Number
 from os import getcwd
 from os.path import join
-from typing import List, Union
+from typing import List, Optional, Type, Union
 
 import dpath
 from platformdirs import user_config_dir
@@ -119,6 +120,28 @@ class Config:
             return True
 
         return False
+
+    def get_as_enum(
+        self, key: str, enum_type: EnumMeta, default: Optional[Enum] = None
+    ) -> Optional[Enum]:
+        """Gets a config value by enum name or value.
+
+        Args:
+            key (str): The named config to get.
+            enum_type (EnumMeta): Interpret the resulting value as an enum of this type.
+            default (Optional[Enum]): The value to return if the config key doesn't exist.
+
+        Returns:
+            Optional[Enum]: The config value interpreted as the given enum type or the default value.
+        """
+        value = self.get(key)
+        if value is None:
+            return default
+
+        if value in enum_type.__members__.keys():
+            return enum_type[value]
+
+        return enum_type(value)
 
     @classmethod
     def autoconfig(
