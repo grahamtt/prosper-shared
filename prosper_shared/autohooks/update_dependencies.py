@@ -1,4 +1,3 @@
-import re
 import subprocess
 import sys
 from subprocess import STDOUT
@@ -14,7 +13,11 @@ DEFAULT_ARGUMENTS = ()
 
 
 def _get_lock_dependencies_config(config: Config) -> Config:
-    return config.get("tool", "autohooks", "plugins", "lock_dependencies")
+    return config.get("tool", "autohooks", "plugins", "update_dependencies", "lock")
+
+
+def _get_install_dependencies_config(config: Config) -> Config:
+    return config.get("tool", "autohooks", "plugins", "update_dependencies", "install")
 
 
 def _ensure_iterable(value: Union[str, List[str]]) -> List[str]:
@@ -28,6 +31,18 @@ def _get_lock_dependencies_arguments(config: Optional[Config]) -> Iterable[str]:
         return DEFAULT_ARGUMENTS
 
     lock_dependencies_config = _get_lock_dependencies_config(config)
+    arguments = _ensure_iterable(
+        lock_dependencies_config.get_value("arguments", DEFAULT_ARGUMENTS)
+    )
+
+    return arguments
+
+
+def _get_install_dependencies_arguments(config: Optional[Config]) -> Iterable[str]:
+    if not config:
+        return DEFAULT_ARGUMENTS
+
+    lock_dependencies_config = _get_install_dependencies_config(config)
     arguments = _ensure_iterable(
         lock_dependencies_config.get_value("arguments", DEFAULT_ARGUMENTS)
     )
@@ -53,28 +68,44 @@ def precommit(
         int: Indicates the output status of the underlying process. 0 -> success, >0 -> failure
     """
     if report_progress:
-        report_progress.init(1)
+        report_progress.init(2)
 
     ret = 0
-    arguments = ["poetry"]
-    arguments.extend(_get_lock_dependencies_arguments(config))
-
     with stash_unstaged_changes():
+        arguments = ["poetry", "lock"]
+        arguments.extend(_get_lock_dependencies_arguments(config))
+
         try:
-            args = arguments.copy()
-            subprocess.check_output(args, stderr=STDOUT)
-            ok("Running `poetry lock`")
+            subprocess.check_output(arguments, stderr=STDOUT)
+            ok(f"Running `{' '.join(arguments)}`")
             if report_progress:
                 report_progress.update()
         except subprocess.CalledProcessError as e:
             ret = e.returncode
-            error("Running `poetry lock`")
+            error(f"Running `{' '.join(arguments)}`")
             lint_errors: List[str] = e.stdout.decode(
                 encoding=sys.getdefaultencoding(), errors="replace"
             ).split("\n")
             for line in lint_errors:
-                if re.match(r"[ ]{4}[0-9]+:", line):
-                    out(line)
+                out(line)
+
+        arguments = ["poetry", "install"]
+        arguments.extend(_get_install_dependencies_arguments(config))
+
+        try:
+            args = arguments.copy()
+            subprocess.check_output(args, stderr=STDOUT)
+            ok(f"Running `{' '.join(arguments)}`")
+            if report_progress:
+                report_progress.update()
+        except subprocess.CalledProcessError as e:
+            ret = e.returncode
+            error(f"Running `{' '.join(arguments)}`")
+            lint_errors: List[str] = e.stdout.decode(
+                encoding=sys.getdefaultencoding(), errors="replace"
+            ).split("\n")
+            for line in lint_errors:
+                out(line)
 
         stage_files(["poetry.lock"])
 
