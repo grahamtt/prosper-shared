@@ -45,6 +45,7 @@ build-backend = "poetry.core.masonry.api"
 mode = "poetry"
 pre-commit = [
     "prosper_shared.autohooks.clean",
+    "prosper_shared.autohooks.lock_dependencies",
     "prosper_shared.autohooks.autoimport",
     "autohooks.plugins.black",
     "autohooks.plugins.ruff",
