@@ -111,6 +111,18 @@ inherit = false
 convention = "google"
 add_ignore = ['D100', 'D104']
 
+
+
+
+
+
+
+
+
+
+
+
+
 [tool.autohooks.plugins.pydoclint]
 include = 'prosper_shared/*.py'
 

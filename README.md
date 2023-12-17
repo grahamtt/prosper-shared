@@ -19,3 +19,7 @@ Pre-commit hooks for use with `autohooks`.
 
 Util for defining, parsing, merging, validating, and using configs from various sources, including file-based configs,
 environment variables, and command-line arguments. This will probably be factored out into an independent library.
+
+## prosper_shared.serde
+
+Util for serializing and deserializing Python objects based on type annotations.

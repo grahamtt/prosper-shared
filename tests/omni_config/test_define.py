@@ -9,6 +9,7 @@ from prosper_shared.omni_config import (
     ConfigValue,
     InputType,
     SchemaType,
+    _define,
     config_schema,
     input_schema,
     realize_config_schemata,
@@ -18,6 +19,14 @@ from prosper_shared.omni_config._define import _arg_parse_from_schema
 
 
 class TestDefine:
+    @pytest.fixture
+    def mock_config_registry(self, mocker):
+        return mocker.patch.object(_define, "_config_registry", [])
+
+    @pytest.fixture
+    def mock_input_registry(self, mocker):
+        return mocker.patch.object(_define, "_input_registry", [])
+
     @pytest.mark.parametrize(
         ["key", "description"], [("valid_key", "valid description")]
     )
@@ -66,7 +75,7 @@ class TestDefine:
         "input4": List[str],
     }
 
-    def test_realize_configs(self):
+    def test_realize_configs(self, mock_config_registry):
         @config_schema
         def config_method() -> SchemaType:
             return self.TEST_SCHEMA
