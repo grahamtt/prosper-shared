@@ -1,4 +1,5 @@
 """Utility for declaring, parsing, merging, and validating configs."""
+
 import argparse
 from copy import deepcopy
 from decimal import Decimal
@@ -7,7 +8,7 @@ from importlib.util import find_spec
 from numbers import Number
 from os import getcwd
 from os.path import join
-from typing import List, Optional, Type, Union
+from typing import List, Optional, Union
 
 import dpath
 from platformdirs import user_config_dir
@@ -22,10 +23,8 @@ from prosper_shared.omni_config._define import _ConfigValue as ConfigValue
 from prosper_shared.omni_config._define import _input_schema as input_schema
 from prosper_shared.omni_config._define import _InputType as InputType
 from prosper_shared.omni_config._define import (
-    _realize_config_schemata as realize_config_schemata,
-)
-from prosper_shared.omni_config._define import (
-    _realize_input_schemata as realize_input_schemata,
+    _realize_config_schemata,
+    _realize_input_schemata,
 )
 from prosper_shared.omni_config._define import _SchemaType as SchemaType
 from prosper_shared.omni_config._merge import _merge_config as merge_config
@@ -36,9 +35,7 @@ from prosper_shared.omni_config._parse import (
 from prosper_shared.omni_config._parse import (
     _EnvironmentVariableSource as EnvironmentVariableSource,
 )
-from prosper_shared.omni_config._parse import (
-    _extract_defaults_from_schema as extract_defaults_from_schema,
-)
+from prosper_shared.omni_config._parse import _extract_defaults_from_schema
 from prosper_shared.omni_config._parse import (
     _FileConfigurationSource as FileConfigurationSource,
 )
@@ -51,6 +48,24 @@ from prosper_shared.omni_config._parse import (
 from prosper_shared.omni_config._parse import (
     _YamlConfigurationSource as YamlConfigurationSource,
 )
+
+__all__ = [
+    "Config",
+    "config_schema",
+    "ConfigKey",
+    "ConfigValue",
+    "input_schema",
+    "InputType",
+    "SchemaType",
+    "merge_config",
+    "ArgParseSource",
+    "ConfigurationSource",
+    "EnvironmentVariableSource",
+    "FileConfigurationSource",
+    "JsonConfigurationSource",
+    "TomlConfigurationSource",
+    "YamlConfigurationSource",
+]
 
 
 class Config:
@@ -171,11 +186,13 @@ class Config:
         if isinstance(app_names, str):
             app_names = [app_names]
 
-        config_schemata = realize_config_schemata()
-        input_schemata = realize_input_schemata()
+        config_schemata = _realize_config_schemata()
+        input_schemata = _realize_input_schemata()
         schema = merge_config([*config_schemata, *input_schemata])
 
-        conf_sources: List[ConfigurationSource] = [extract_defaults_from_schema(schema)]
+        conf_sources: List[ConfigurationSource] = [
+            _extract_defaults_from_schema(schema)
+        ]
 
         conf_sources += [
             JsonConfigurationSource(join(user_config_dir(app_name), "config.json"))

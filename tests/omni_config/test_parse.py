@@ -12,8 +12,8 @@ from prosper_shared.omni_config import (
     JsonConfigurationSource,
     TomlConfigurationSource,
     YamlConfigurationSource,
-    extract_defaults_from_schema,
 )
+from prosper_shared.omni_config._parse import _extract_defaults_from_schema
 
 
 class TestParse:
@@ -165,4 +165,4 @@ class TestParse:
         ),
     )
     def test_extract_defaults_from_schema(self, schema, expected_defaults):
-        assert extract_defaults_from_schema(schema) == expected_defaults
+        assert _extract_defaults_from_schema(schema) == expected_defaults

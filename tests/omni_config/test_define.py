@@ -12,10 +12,12 @@ from prosper_shared.omni_config import (
     _define,
     config_schema,
     input_schema,
-    realize_config_schemata,
-    realize_input_schemata,
 )
-from prosper_shared.omni_config._define import _arg_parse_from_schema
+from prosper_shared.omni_config._define import (
+    _arg_parse_from_schema,
+    _realize_config_schemata,
+    _realize_input_schemata,
+)
 
 
 class TestDefine:
@@ -80,14 +82,14 @@ class TestDefine:
         def config_method() -> SchemaType:
             return self.TEST_SCHEMA
 
-        assert realize_config_schemata() == [self.TEST_SCHEMA]
+        assert _realize_config_schemata() == [self.TEST_SCHEMA]
 
-    def test_realize_inputs(self):
+    def test_realize_inputs(self, mock_input_registry):
         @input_schema
         def input_method() -> InputType:
             return self.TEST_INPUTS
 
-        assert realize_input_schemata() == [self.TEST_INPUTS]
+        assert _realize_input_schemata() == [self.TEST_INPUTS]
 
     @pytest.mark.skipif(
         sys.version_info < (3, 10), reason="Argparse behavior changes after 3.9"
