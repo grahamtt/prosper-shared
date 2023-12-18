@@ -95,7 +95,7 @@ class TestDefine:
         sys.version_info < (3, 10), reason="Argparse behavior changes after 3.9"
     )
     def test_arg_parse_from_schema(self):
-        test_schema = {
+        test_config_schema = {
             "key1": str,
             Optional("key2"): int,
             ConfigKey("key3", "prefix_"): bool,
@@ -109,13 +109,26 @@ class TestDefine:
                 ConfigKey("gkey3", "prefix_"): bool,
             },
         }
+        test_input_schema = {
+            "key6": str,
+            Optional("key7", default="default_value"): str,
+            ConfigKey("key8", "key8 description"): str,
+        }
 
-        actual_arg_parse = _arg_parse_from_schema("pytest", test_schema)
+        actual_arg_parse = _arg_parse_from_schema(
+            "pytest", test_config_schema, test_input_schema
+        )
 
         assert actual_arg_parse.format_help() == (
             "usage: pytest [-h] [--key1 key1] [--key2 key2] [--key3] [--key4 key4] "
             "[--key5]\n"
             "              [--gkey1 group1__gkey1] [--gkey2 group1__gkey2] [--gkey3]\n"
+            "              [--key7 key7]\n"
+            "              str str\n"
+            "\n"
+            "positional arguments:\n"
+            "  str                   str\n"
+            "  str                   str\n"
             "\n"
             "options:\n"
             "  -h, --help            show this help message and exit\n"
@@ -124,6 +137,7 @@ class TestDefine:
             "  --key3                bool\n"
             "  --key4 key4           String matching regex /regex_value/\n"
             "  --key5                Good value\n"
+            "  --key7 key7           str\n"
             "\n"
             "group1:\n"
             "  --gkey1 group1__gkey1\n"
@@ -139,4 +153,4 @@ class TestDefine:
         }
 
         with pytest.raises(ValueError):
-            _arg_parse_from_schema("pytest", test_schema)
+            _arg_parse_from_schema("pytest", test_schema, {})

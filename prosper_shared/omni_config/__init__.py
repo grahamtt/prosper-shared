@@ -186,8 +186,8 @@ class Config:
         if isinstance(app_names, str):
             app_names = [app_names]
 
-        config_schemata = _realize_config_schemata()
-        input_schemata = _realize_input_schemata()
+        config_schemata = merge_config(_realize_config_schemata())
+        input_schemata = merge_config(_realize_input_schemata())
         schema = merge_config([*config_schemata, *input_schemata])
 
         conf_sources: List[ConfigurationSource] = [
@@ -249,7 +249,11 @@ class Config:
         ]
         conf_sources.append(
             ArgParseSource(
-                arg_parse if arg_parse else arg_parse_from_schema(app_names[-1], schema)
+                arg_parse
+                if arg_parse
+                else arg_parse_from_schema(
+                    app_names[-1], config_schemata, input_schemata
+                )
             )
         )
 

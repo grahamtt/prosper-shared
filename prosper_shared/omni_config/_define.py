@@ -131,23 +131,34 @@ class _NullRespectingMetavarTypeHelpFormatter(MetavarTypeHelpFormatter):
 
 
 def _arg_parse_from_schema(
-    prog_name: str, schema: _SchemaType
+    prog_name: str, config_schema: _SchemaType, input_schema: _SchemaType
 ) -> argparse.ArgumentParser:
     """Really simple schema->argparse converter."""
     arg_parser = argparse.ArgumentParser(
         prog_name, formatter_class=_NullRespectingMetavarTypeHelpFormatter
     )
-    _arg_group_from_schema("", schema, arg_parser)
+    _arg_group_from_schema(
+        "", config_schema, arg_parser, treat_like_cli_exclusive_input=False
+    )
+    _arg_group_from_schema(
+        "", input_schema, arg_parser, treat_like_cli_exclusive_input=True
+    )
     return arg_parser
 
 
-def _arg_group_from_schema(path: str, schema: _SchemaType, arg_group) -> None:
+def _arg_group_from_schema(
+    path: str, schema: _SchemaType, arg_group, treat_like_cli_exclusive_input: bool
+) -> None:
     for k, v in schema.items():
+        has_default = hasattr(k, "default")
         if isinstance(k, (SchemaOptional, _ConfigKey)):
             k = k.schema
         if isinstance(v, dict):
             _arg_group_from_schema(
-                f"{path}__{k}" if path else k, v, arg_group.add_argument_group(k)
+                f"{path}__{k}" if path else k,
+                v,
+                arg_group.add_argument_group(k),
+                treat_like_cli_exclusive_input,
             )
         else:
             if isinstance(v, Regex):
@@ -168,4 +179,8 @@ def _arg_group_from_schema(path: str, schema: _SchemaType, arg_group) -> None:
             }
             if v != bool:
                 kwargs["type"] = v
-            arg_group.add_argument(f"--{k}", **kwargs)
+            if not has_default and treat_like_cli_exclusive_input:
+                # Produce a required positional argument for required input values that are arg-parse exclusive
+                arg_group.add_argument(**kwargs)
+            else:
+                arg_group.add_argument(f"--{k}", **kwargs)

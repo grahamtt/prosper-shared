@@ -77,9 +77,11 @@ arguments = [
     "--disable-mutation-types=string,fstring,expr_stmt,annassign,number", '--CI',
 ]
 
-#[tool.autohooks.plugins.autoimport]
-##ignore_init_modules = true
-#arguments = ["--ignore-init-modules"]
+[tool.autohooks.plugins.pydoclint]
+include = 'prosper_shared/*.py'
+
+[tool.autohooks.plugins.pydocstyle]
+include = 'prosper_shared/*.py'
 
 [tool.autohooks.plugins.update_dependencies.install]
 arguments = ['--all-extras']
@@ -110,33 +112,3 @@ allow-init-docstring = true
 inherit = false
 convention = "google"
 add_ignore = ['D100', 'D104']
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-[tool.autohooks.plugins.pydoclint]
-include = 'prosper_shared/*.py'
-
-[tool.autohooks.plugins.pydocstyle]
-include = 'prosper_shared/*.py'
