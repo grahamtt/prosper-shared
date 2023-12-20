@@ -212,8 +212,17 @@ def _extract_defaults_from_schema(
         return defaults
 
     for k, v in schema.items():
-        if isinstance(k, (SchemaOptional, _ConfigKey)):
-            defaults[k.schema] = k.default if hasattr(k, "default") else None
-            _extract_defaults_from_schema(schema[k], defaults)
+        while isinstance(k, (SchemaOptional, _ConfigKey)):
+            defaults[k.schema] = (
+                k.default
+                if k.default
+                else defaults[k.schema]
+                if k.schema in defaults
+                else None
+            )
+            k = k.schema
+        if isinstance(v, dict):
+            defaults[k] = {}
+            _extract_defaults_from_schema(v, defaults[k])
 
     return defaults

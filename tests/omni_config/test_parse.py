@@ -155,13 +155,13 @@ class TestParse:
     @pytest.mark.parametrize(
         ["schema", "expected_defaults"],
         (
+            ("x", {}),
             (
                 {SchemaOptional("x", default="y"): str},
                 {"x": "y"},
             ),
-            ({SchemaOptional("x", default="y"): str}, {"x": "y"}),
-            ({"x": {"z": SchemaOptional("z", default="1")}}, {}),
-            ({"x": {SchemaOptional("z", default=1): int}}, {}),
+            ({"x": {"z": SchemaOptional("z", default="1")}}, {"x": {}}),
+            ({"x": {SchemaOptional("z", default=1): int}}, {"x": {"z": 1}}),
         ),
     )
     def test_extract_defaults_from_schema(self, schema, expected_defaults):

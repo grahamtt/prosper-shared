@@ -186,7 +186,7 @@ class Config:
 
         config_schemata = merge_config(_realize_config_schemata())
         input_schemata = merge_config(_realize_input_schemata())
-        schema = merge_config([*config_schemata, *input_schemata])
+        schema = merge_config([config_schemata, input_schemata])
 
         conf_sources: List[ConfigurationSource] = [
             _extract_defaults_from_schema(schema)
