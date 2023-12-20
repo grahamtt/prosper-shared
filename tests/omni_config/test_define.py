@@ -114,26 +114,25 @@ class TestDefine:
         )
 
         assert actual_arg_parse.format_help() == (
-            "usage: pytest [-h] [--key1 key1] [--key2] [--key3 key3] [--key4]\n"
-            "              [--gkey1 group1__gkey1] [--gkey2] [--key7 key7]\n"
-            "              str\n"
+            "usage: pytest [-h] [--key1 KEY1] [--key2] [--key3 KEY3] [--key4]\n"
+            "              [--gkey1 GKEY1] [--gkey2] [--key7 KEY7]\n"
+            "              KEY6\n"
             "\n"
             "positional arguments:\n"
-            "  str                   key6 desc; Type: str\n"
+            "  KEY6           key6 desc; Type: str\n"
             "\n"
             "options:\n"
-            "  -h, --help            show this help message and exit\n"
-            "  --key1 key1           key1 desc; Type: str\n"
-            "  --key2                key2 desc; Type: bool\n"
-            "  --key3 key3           key3 desc; Type: str matching /regex_value/\n"
-            "  --key4                key4 desc; Type: bool\n"
-            "  --key7 key7           key7 desc; Type: str; Default: default_value\n"
+            "  -h, --help     show this help message and exit\n"
+            "  --key1 KEY1    key1 desc; Type: str\n"
+            "  --key2         key2 desc; Type: bool\n"
+            "  --key3 KEY3    key3 desc; Type: str matching /regex_value/\n"
+            "  --key4         key4 desc; Type: bool; Default: False\n"
+            "  --key7 KEY7    key7 desc; Type: str; Default: default_value\n"
             "\n"
             "group1:\n"
             "\n"
-            "  --gkey1 group1__gkey1\n"
-            "                        gkey1 desc; Type: str\n"
-            "  --gkey2               gkey3 desc; Type: bool; Default: True\n"
+            "  --gkey1 GKEY1  gkey1 desc; Type: str\n"
+            "  --gkey2        gkey3 desc; Type: bool; Default: True\n"
         )
 
     def test_arg_parse_from_schema_if_missing_description(self):

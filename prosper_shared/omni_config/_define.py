@@ -69,7 +69,7 @@ class _ConfigKey:
 
 
 _SchemaType = Dict[
-    Union[str, _ConfigKey],
+    Union[str, _ConfigKey, SchemaOptional],
     Union[str, int, float, dict, list, bool, Regex, "_SchemaType"],
 ]
 
@@ -116,6 +116,9 @@ class _NullRespectingMetavarTypeHelpFormatter(MetavarTypeHelpFormatter):
     def _get_default_metavar_for_optional(self, action):
         return action.dest if action.dest else action.type.__name__
 
+    def _get_default_metavar_for_positional(self, action):
+        return action.dest if action.dest else action.type.__name__
+
 
 def _arg_parse_from_schema(
     prog_name: str, config_schema: _SchemaType, input_schema: _SchemaType
@@ -137,13 +140,20 @@ def _arg_group_from_schema(
     path: str, schema: _SchemaType, arg_group, treat_like_cli_exclusive_input: bool
 ) -> None:
     for k, v in schema.items():
-        description = (
-            k.description if hasattr(k, "description") and k.description else ""
-        )
-        has_default = hasattr(k, "default") and k.default
-        default_desc = f"Default: {k.default}" if has_default else ""
+        description = ""
+        has_default = False
+        default_desc = ""
 
-        if isinstance(k, _ConfigKey):
+        while isinstance(k, (_ConfigKey, SchemaOptional)):
+            description = (
+                k.description
+                if hasattr(k, "description") and k.description
+                else description
+            )
+            has_default = (
+                hasattr(k, "default") and k.default is not None
+            ) or has_default
+            default_desc = f"Default: {k.default}" if has_default else default_desc
             k = k.schema
         if isinstance(v, dict):
             _arg_group_from_schema(
@@ -176,6 +186,7 @@ def _arg_group_from_schema(
             }
             if v != bool:
                 kwargs["type"] = v
+                kwargs["metavar"] = k.upper()
             if not has_default and treat_like_cli_exclusive_input:
                 # Produce a required positional argument for required input values that are arg-parse exclusive
                 arg_group.add_argument(**kwargs)
