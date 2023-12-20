@@ -160,6 +160,14 @@ class TestParse:
                 {SchemaOptional("x", default="y"): str},
                 {"x": "y"},
             ),
+            (
+                {SchemaOptional("x"): str},
+                {},
+            ),
+            (
+                {SchemaOptional("x", default=False): bool},
+                {"x": False},
+            ),
             ({"x": {"z": SchemaOptional("z", default="1")}}, {"x": {}}),
             ({"x": {SchemaOptional("z", default=1): int}}, {"x": {"z": 1}}),
         ),
