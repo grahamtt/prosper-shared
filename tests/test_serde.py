@@ -5,14 +5,14 @@ import pytest
 from prosper_shared.serde import Serde, _ModelTreeWalker
 
 
-class TestClass1(NamedTuple):
+class Person(NamedTuple):
     age: int
     name: str
 
 
-class TestClass2(NamedTuple):
+class Order(NamedTuple):
     num_items: int
-    customer: TestClass1
+    customer: Person
 
 
 class TestSerde:
@@ -25,20 +25,20 @@ class TestSerde:
         [
             (
                 '{"age":38,"name": "Sean Spencer"}',
-                TestClass1,
-                TestClass1(38, "Sean Spencer"),
+                Person,
+                Person(38, "Sean Spencer"),
             ),
             (
                 '{"num_items":3,"customer":{"age":38,"name": "Sean Spencer"}}',
-                TestClass2,
-                TestClass2(3, TestClass1(38, "Sean Spencer")),
+                Order,
+                Order(3, Person(38, "Sean Spencer")),
             ),
             (
                 '{"num_items":3,"customer":{"age":38,"name": "Sean Spencer"},"unknown_key":51}',
-                TestClass2,
+                Order,
                 {
                     "num_items": 3,
-                    "customer": TestClass1(38, "Sean Spencer"),
+                    "customer": Person(38, "Sean Spencer"),
                     "unknown_key": 51,
                 },
             ),
@@ -48,4 +48,4 @@ class TestSerde:
         assert Serde(config_mock).deserialize(json_str, output_class) == expected_result
 
     def test_model_tree_walker(self):
-        assert list(_ModelTreeWalker(TestClass2)) == [TestClass2, int, TestClass1, str]
+        assert list(_ModelTreeWalker(Order)) == [Order, int, Person, str]

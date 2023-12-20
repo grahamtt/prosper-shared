@@ -19,7 +19,6 @@ from prosper_shared.omni_config._define import (
 )
 from prosper_shared.omni_config._define import _config_schema as config_schema
 from prosper_shared.omni_config._define import _ConfigKey as ConfigKey
-from prosper_shared.omni_config._define import _ConfigValue as ConfigValue
 from prosper_shared.omni_config._define import _input_schema as input_schema
 from prosper_shared.omni_config._define import _InputType as InputType
 from prosper_shared.omni_config._define import (
@@ -53,7 +52,6 @@ __all__ = [
     "Config",
     "config_schema",
     "ConfigKey",
-    "ConfigValue",
     "input_schema",
     "InputType",
     "SchemaType",

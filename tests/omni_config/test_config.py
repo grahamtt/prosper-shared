@@ -42,7 +42,7 @@ TEST_SCHEMA = {
 }
 
 
-class TestEnum(Enum):
+class ContrivedEnum(Enum):
     KEY = "value"
 
 
@@ -92,22 +92,22 @@ class TestConfig:
     @pytest.mark.parametrize(
         ["config_value", "given_default", "expected_value"],
         [
-            ("KEY", None, TestEnum.KEY),
-            ("value", None, TestEnum.KEY),
-            (None, TestEnum.KEY, TestEnum.KEY),
+            ("KEY", None, ContrivedEnum.KEY),
+            ("value", None, ContrivedEnum.KEY),
+            (None, ContrivedEnum.KEY, ContrivedEnum.KEY),
         ],
     )
     def test_get_as_enum_happy(self, config_value, given_default, expected_value):
         config = Config(config_dict={"enum_config": config_value})
         actual_value = config.get_as_enum(
-            "enum_config", TestEnum, default=given_default
+            "enum_config", ContrivedEnum, default=given_default
         )
         assert actual_value == expected_value
 
     def test_get_as_enum_unhappy(self):
         config = Config(config_dict={"enum_config": "BAD_KEY"})
         with pytest.raises(ValueError):
-            config.get_as_enum("enum_config", TestEnum)
+            config.get_as_enum("enum_config", ContrivedEnum)
 
     def test_get_invalid_key(self):
         config = Config(config_dict=TEST_CONFIG)

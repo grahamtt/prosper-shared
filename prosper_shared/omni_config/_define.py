@@ -2,7 +2,7 @@
 
 import argparse
 from argparse import MetavarTypeHelpFormatter
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from schema import Optional as SchemaOptional
 from schema import Regex, SchemaError, SchemaWrongKeyError
@@ -12,17 +12,18 @@ class _ConfigKey:
     """Defines a valid schema config key."""
 
     def __init__(
-        self, expected_val: str, description: str, prefix: Optional[str] = None
+        self, expected_val: str, description: str, default: Optional[Any] = None
     ):
         """Creates a ConfigKey instance.
 
         Arguments:
             expected_val (str): The expected key for this config entry.
             description (str): The description for this config entry.
-            prefix (Optional[str]): Prefix for environment variables rooted at this subtree.
+            default (Optional[Any]): Return this value if the key isn't present in the realized config.
         """
         self._expected_val = expected_val
-        self._custom_env_variable_prefix = prefix
+        self._description = description
+        self._default = default
 
     def validate(self, val: str) -> str:
         """Returns the key iff the key is a string value matching the expected value.
@@ -58,23 +59,9 @@ class _ConfigKey:
     def schema(self):
         return self._expected_val
 
-
-class _ConfigValue:
-    """Defines a valid schema config value."""
-
-    def __init__(self, schema: str, description: str):
-        """Creates a ConfigKey instance.
-
-        Arguments:
-            schema (str): The schema for this entry.
-            description (str): The description for this entry.
-        """
-        self._schema = schema
-        self._description = description
-
     @property
-    def schema(self):
-        return self._schema
+    def default(self):
+        return self._default
 
     @property
     def description(self):
@@ -82,7 +69,7 @@ class _ConfigValue:
 
 
 _SchemaType = Dict[
-    Union[str, _ConfigKey, SchemaOptional],
+    Union[str, _ConfigKey],
     Union[str, int, float, dict, list, bool, Regex, "_SchemaType"],
 ]
 
@@ -150,31 +137,41 @@ def _arg_group_from_schema(
     path: str, schema: _SchemaType, arg_group, treat_like_cli_exclusive_input: bool
 ) -> None:
     for k, v in schema.items():
-        has_default = hasattr(k, "default")
-        if isinstance(k, (SchemaOptional, _ConfigKey)):
+        description = (
+            k.description if hasattr(k, "description") and k.description else ""
+        )
+        has_default = hasattr(k, "default") and k.default
+        default_desc = f"Default: {k.default}" if has_default else ""
+
+        if isinstance(k, _ConfigKey):
             k = k.schema
         if isinstance(v, dict):
             _arg_group_from_schema(
                 f"{path}__{k}" if path else k,
                 v,
-                arg_group.add_argument_group(k),
+                arg_group.add_argument_group(k, description=description),
                 treat_like_cli_exclusive_input,
             )
         else:
+            if not description:
+                raise ValueError(
+                    f"No description provided for leaf config key {path}.{k}"
+                )
             if isinstance(v, Regex):
-                help_str = f"String matching regex /{v.pattern_str}/"
+                constraint_desc = f"Type: str matching /{v.pattern_str}/"
                 v = str
-            elif isinstance(v, _ConfigValue):
-                help_str = v.description
-                v = v.schema
             elif callable(v):
-                help_str = v.__name__
+                constraint_desc = f"Type: {v.__name__}"
             else:
                 raise ValueError(f"Invalid config value type: {type(v)}")
 
+            helps = [description, constraint_desc]
+            if default_desc:
+                helps.append(default_desc)
+
             kwargs = {
                 "dest": f"{path}__{k}" if path else k,
-                "help": help_str,
+                "help": "; ".join(helps),
                 "action": "store_true" if v == bool else "store",
             }
             if v != bool:

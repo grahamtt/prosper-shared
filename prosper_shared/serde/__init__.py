@@ -13,9 +13,7 @@ from decimal import Decimal
 from queue import Empty, Queue
 from typing import IO, Callable, Iterable, Union
 
-from schema import Optional
-
-from prosper_shared.omni_config import Config, SchemaType, config_schema
+from prosper_shared.omni_config import Config, ConfigKey, SchemaType, config_schema
 
 logger = logging.getLogger()
 
@@ -31,13 +29,22 @@ _PARSE_ENUMS_CONFIG_PATH = "serde.parse-enums"
 @config_schema
 def _schema() -> SchemaType:
     return {
-        Optional(
-            "serde",
-            default={"parse-decimals": True, "parse-dates": True, "parse-enums": True},
-        ): {
-            Optional("use-decimals", default=True): bool,
-            Optional("parse-dates", default=True): bool,
-            Optional("parse-enums", default=True): bool,
+        "serde": {
+            ConfigKey(
+                "use-decimals",
+                "Floating point values should be parsed as decimals instead of floats.",
+                default=True,
+            ): bool,
+            ConfigKey(
+                "parse-dates",
+                "Date values represented as strings should be parsed into `date` and `datetime` objects. Supports ISO-8601-compliant date strings.",
+                default=True,
+            ): bool,
+            ConfigKey(
+                "parse-enums",
+                "Enum values represented as strings should be parsed into their respective types.",
+                default=True,
+            ): bool,
         }
     }
 

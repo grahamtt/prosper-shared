@@ -2,11 +2,10 @@ import sys
 from typing import Dict, List
 
 import pytest
-from schema import Optional, Regex, SchemaError, SchemaWrongKeyError
+from schema import Regex, SchemaError, SchemaWrongKeyError
 
 from prosper_shared.omni_config import (
     ConfigKey,
-    ConfigValue,
     InputType,
     SchemaType,
     _define,
@@ -96,23 +95,18 @@ class TestDefine:
     )
     def test_arg_parse_from_schema(self):
         test_config_schema = {
-            "key1": str,
-            Optional("key2"): int,
-            ConfigKey("key3", "prefix_"): bool,
-            "key4": Regex("regex_value"),
-            ConfigKey("key5", description="Good stuff"): ConfigValue(
-                bool, "Good value"
-            ),
+            ConfigKey("key1", description="key1 desc"): str,
+            ConfigKey("key2", "key2 desc"): bool,
+            ConfigKey("key3", "key3 desc"): Regex("regex_value"),
+            ConfigKey("key4", "key4 desc", False): bool,
             "group1": {
-                "gkey1": str,
-                Optional("gkey2"): int,
-                ConfigKey("gkey3", "prefix_"): bool,
+                ConfigKey("gkey1", description="gkey1 desc"): str,
+                ConfigKey("gkey2", "gkey3 desc", True): bool,
             },
         }
         test_input_schema = {
-            "key6": str,
-            Optional("key7", default="default_value"): str,
-            ConfigKey("key8", "key8 description"): str,
+            ConfigKey("key6", "key6 desc"): str,
+            ConfigKey("key7", "key7 desc", default="default_value"): str,
         }
 
         actual_arg_parse = _arg_parse_from_schema(
@@ -120,36 +114,39 @@ class TestDefine:
         )
 
         assert actual_arg_parse.format_help() == (
-            "usage: pytest [-h] [--key1 key1] [--key2 key2] [--key3] [--key4 key4] "
-            "[--key5]\n"
-            "              [--gkey1 group1__gkey1] [--gkey2 group1__gkey2] [--gkey3]\n"
-            "              [--key7 key7]\n"
-            "              str str\n"
+            "usage: pytest [-h] [--key1 key1] [--key2] [--key3 key3] [--key4]\n"
+            "              [--gkey1 group1__gkey1] [--gkey2] [--key7 key7]\n"
+            "              str\n"
             "\n"
             "positional arguments:\n"
-            "  str                   str\n"
-            "  str                   str\n"
+            "  str                   key6 desc; Type: str\n"
             "\n"
             "options:\n"
             "  -h, --help            show this help message and exit\n"
-            "  --key1 key1           str\n"
-            "  --key2 key2           int\n"
-            "  --key3                bool\n"
-            "  --key4 key4           String matching regex /regex_value/\n"
-            "  --key5                Good value\n"
-            "  --key7 key7           str\n"
+            "  --key1 key1           key1 desc; Type: str\n"
+            "  --key2                key2 desc; Type: bool\n"
+            "  --key3 key3           key3 desc; Type: str matching /regex_value/\n"
+            "  --key4                key4 desc; Type: bool\n"
+            "  --key7 key7           key7 desc; Type: str; Default: default_value\n"
             "\n"
             "group1:\n"
+            "\n"
             "  --gkey1 group1__gkey1\n"
-            "                        str\n"
-            "  --gkey2 group1__gkey2\n"
-            "                        int\n"
-            "  --gkey3               bool\n"
+            "                        gkey1 desc; Type: str\n"
+            "  --gkey2               gkey3 desc; Type: bool; Default: True\n"
         )
+
+    def test_arg_parse_from_schema_if_missing_description(self):
+        test_schema = {
+            "key1": str,
+        }
+
+        with pytest.raises(ValueError):
+            _arg_parse_from_schema("pytest", test_schema, {})
 
     def test_arg_parse_from_schema_if_type_not_callable(self):
         test_schema = {
-            "key1": "value",
+            ConfigKey("key1", "key1 desc"): "value",
         }
 
         with pytest.raises(ValueError):
