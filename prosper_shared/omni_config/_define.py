@@ -178,7 +178,13 @@ def _arg_group_from_schema(
                 raise ValueError(f"Invalid config value type: {type(v)}")
 
             if Enum in v.__mro__:
-                options = list(e.value for e in v)
+                constraint_desc = "Type: str"
+                options = list(e.name for e in v)
+                default_desc = (
+                    default_desc.replace(f"{v.__name__}.", "")
+                    if default_desc
+                    else default_desc
+                )
 
             helps = [description, constraint_desc]
             if default_desc:
