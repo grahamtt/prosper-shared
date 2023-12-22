@@ -129,10 +129,10 @@ def _arg_parse_from_schema(
         prog_name, formatter_class=_NullRespectingMetavarTypeHelpFormatter, **kwargs
     )
     _arg_group_from_schema(
-        "", config_schema, arg_parser, treat_like_cli_exclusive_input=False
+        "", config_schema, arg_parser, arg_parser, treat_like_cli_exclusive_input=False
     )
     _arg_group_from_schema(
-        "", input_schema, arg_parser, treat_like_cli_exclusive_input=True
+        "", input_schema, arg_parser, arg_parser, treat_like_cli_exclusive_input=True
     )
     return arg_parser
 
@@ -148,7 +148,11 @@ def _key_to_enum_converter(enum):
 
 
 def _arg_group_from_schema(
-    path: str, schema: _SchemaType, arg_group, treat_like_cli_exclusive_input: bool
+    path: str,
+    schema: _SchemaType,
+    arg_parser,
+    arg_group,
+    treat_like_cli_exclusive_input: bool,
 ) -> None:
     for k, v in schema.items():
         description = ""
@@ -168,10 +172,14 @@ def _arg_group_from_schema(
             default_desc = f"Default: {k.default}" if has_default else default_desc
             k = k.schema
         if isinstance(v, dict):
+            new_path = f"{path}__{k}" if path else k
             _arg_group_from_schema(
-                f"{path}__{k}" if path else k,
+                new_path,
                 v,
-                arg_group.add_argument_group(k, description=description),
+                arg_parser,
+                arg_parser.add_argument_group(
+                    new_path.replace("__", "."), description=description
+                ),
                 treat_like_cli_exclusive_input,
             )
         else:

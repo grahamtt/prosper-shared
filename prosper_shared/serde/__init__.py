@@ -21,30 +21,32 @@ __all__ = ["Serde"]
 
 _object_hooks_by_type = {}
 
-_USE_DECIMALS_CONFIG_PATH = "serde.use-decimals"
-_PARSE_DATES_CONFIG_PATH = "serde.parse-dates"
-_PARSE_ENUMS_CONFIG_PATH = "serde.parse-enums"
+_USE_DECIMALS_CONFIG_PATH = "prosper_shared.serde.use-decimals"
+_PARSE_DATES_CONFIG_PATH = "prosper_shared.serde.parse-dates"
+_PARSE_ENUMS_CONFIG_PATH = "prosper_shared.serde.parse-enums"
 
 
 @config_schema
 def _schema() -> SchemaType:
     return {
-        "serde": {
-            ConfigKey(
-                "use-decimals",
-                "Floating point values should be parsed as decimals instead of floats.",
-                default=True,
-            ): bool,
-            ConfigKey(
-                "parse-dates",
-                "Date values represented as strings should be parsed into `date` and `datetime` objects. Supports ISO-8601-compliant date strings.",
-                default=True,
-            ): bool,
-            ConfigKey(
-                "parse-enums",
-                "Enum values represented as strings should be parsed into their respective types.",
-                default=True,
-            ): bool,
+        "prosper_shared": {
+            "serde": {
+                ConfigKey(
+                    "use-decimals",
+                    "Floating point values should be parsed as decimals instead of floats.",
+                    default=True,
+                ): bool,
+                ConfigKey(
+                    "parse-dates",
+                    "Date values represented as strings should be parsed into `date` and `datetime` objects. Supports ISO-8601-compliant date strings.",
+                    default=True,
+                ): bool,
+                ConfigKey(
+                    "parse-enums",
+                    "Enum values represented as strings should be parsed into their respective types.",
+                    default=True,
+                ): bool,
+            }
         }
     }
 
