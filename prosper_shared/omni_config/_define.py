@@ -2,6 +2,7 @@
 
 import argparse
 from argparse import MetavarTypeHelpFormatter
+from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from schema import Optional as SchemaOptional
@@ -143,6 +144,7 @@ def _arg_group_from_schema(
         description = ""
         has_default = False
         default_desc = ""
+        options = None
 
         while isinstance(k, (_ConfigKey, SchemaOptional)):
             description = (
@@ -175,6 +177,9 @@ def _arg_group_from_schema(
             else:
                 raise ValueError(f"Invalid config value type: {type(v)}")
 
+            if Enum in v.__mro__:
+                options = list(e.value for e in v)
+
             helps = [description, constraint_desc]
             if default_desc:
                 helps.append(default_desc)
@@ -187,6 +192,9 @@ def _arg_group_from_schema(
             if v != bool:
                 kwargs["type"] = v
                 kwargs["metavar"] = k.upper()
+            if options:
+                kwargs["metavar"] = None
+                kwargs["choices"] = options
             if not has_default and treat_like_cli_exclusive_input:
                 # Produce a required positional argument for required input values that are arg-parse exclusive
                 arg_group.add_argument(**kwargs)

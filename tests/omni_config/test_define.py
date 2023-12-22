@@ -1,4 +1,5 @@
 import sys
+from enum import Enum
 from typing import Dict, List
 
 import pytest
@@ -17,6 +18,11 @@ from prosper_shared.omni_config._define import (
     _realize_config_schemata,
     _realize_input_schemata,
 )
+
+
+class TestEnum(Enum):
+    KEY1 = "VALUE1"
+    KEY2 = "VALUE2"
 
 
 class TestDefine:
@@ -99,6 +105,7 @@ class TestDefine:
             ConfigKey("key2", "key2 desc"): bool,
             ConfigKey("key3", "key3 desc"): Regex("regex_value"),
             ConfigKey("key4", "key4 desc", False): bool,
+            ConfigKey("key5", "key5 desc"): TestEnum,
             "group1": {
                 ConfigKey("gkey1", description="gkey1 desc"): str,
                 ConfigKey("gkey2", "gkey3 desc", True): bool,
@@ -115,24 +122,27 @@ class TestDefine:
 
         assert actual_arg_parse.format_help() == (
             "usage: pytest [-h] [--key1 KEY1] [--key2] [--key3 KEY3] [--key4]\n"
-            "              [--gkey1 GKEY1] [--gkey2] [--key7 KEY7]\n"
+            "              [--key5 {VALUE1,VALUE2}] [--gkey1 GKEY1] [--gkey2] [--key7 "
+            "KEY7]\n"
             "              KEY6\n"
             "\n"
             "positional arguments:\n"
-            "  KEY6           key6 desc; Type: str\n"
+            "  KEY6                  key6 desc; Type: str\n"
             "\n"
             "options:\n"
-            "  -h, --help     show this help message and exit\n"
-            "  --key1 KEY1    key1 desc; Type: str\n"
-            "  --key2         key2 desc; Type: bool\n"
-            "  --key3 KEY3    key3 desc; Type: str matching /regex_value/\n"
-            "  --key4         key4 desc; Type: bool; Default: False\n"
-            "  --key7 KEY7    key7 desc; Type: str; Default: default_value\n"
+            "  -h, --help            show this help message and exit\n"
+            "  --key1 KEY1           key1 desc; Type: str\n"
+            "  --key2                key2 desc; Type: bool\n"
+            "  --key3 KEY3           key3 desc; Type: str matching /regex_value/\n"
+            "  --key4                key4 desc; Type: bool; Default: False\n"
+            "  --key5 {VALUE1,VALUE2}\n"
+            "                        key5 desc; Type: TestEnum\n"
+            "  --key7 KEY7           key7 desc; Type: str; Default: default_value\n"
             "\n"
             "group1:\n"
             "\n"
-            "  --gkey1 GKEY1  gkey1 desc; Type: str\n"
-            "  --gkey2        gkey3 desc; Type: bool; Default: True\n"
+            "  --gkey1 GKEY1         gkey1 desc; Type: str\n"
+            "  --gkey2               gkey3 desc; Type: bool; Default: True\n"
         )
 
     def test_arg_parse_from_schema_if_missing_description(self):
