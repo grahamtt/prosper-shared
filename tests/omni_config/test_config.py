@@ -365,3 +365,37 @@ class TestConfig:
             "  }\n"
             "}"
         )
+
+    def test_get_config_help_no_description(self, mocker):
+        test_config_schema = {
+            "key1": str,
+        }
+        test_input_schema = {}
+        realize_config_schemata_mock = mocker.patch(
+            "prosper_shared.omni_config._realize_config_schemata"
+        )
+        realize_input_schemata_mock = mocker.patch(
+            "prosper_shared.omni_config._realize_input_schemata"
+        )
+        realize_config_schemata_mock.return_value = [test_config_schema]
+        realize_input_schemata_mock.return_value = [test_input_schema]
+
+        with pytest.raises(ValueError):
+            get_config_help()
+
+    def test_get_config_help_bad_value(self, mocker):
+        test_config_schema = {
+            ConfigKey("key1", description="key1 desc"): "bad_value",
+        }
+        test_input_schema = {}
+        realize_config_schemata_mock = mocker.patch(
+            "prosper_shared.omni_config._realize_config_schemata"
+        )
+        realize_input_schemata_mock = mocker.patch(
+            "prosper_shared.omni_config._realize_input_schemata"
+        )
+        realize_config_schemata_mock.return_value = [test_config_schema]
+        realize_input_schemata_mock.return_value = [test_input_schema]
+
+        with pytest.raises(ValueError):
+            get_config_help()
