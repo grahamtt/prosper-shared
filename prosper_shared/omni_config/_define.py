@@ -121,11 +121,11 @@ class _NullRespectingMetavarTypeHelpFormatter(MetavarTypeHelpFormatter):
 
 
 def _arg_parse_from_schema(
-    prog_name: str, config_schema: _SchemaType, input_schema: _SchemaType
+    prog_name: str, config_schema: _SchemaType, input_schema: _SchemaType, **kwargs
 ) -> argparse.ArgumentParser:
     """Really simple schema->argparse converter."""
     arg_parser = argparse.ArgumentParser(
-        prog_name, formatter_class=_NullRespectingMetavarTypeHelpFormatter
+        prog_name, formatter_class=_NullRespectingMetavarTypeHelpFormatter, **kwargs
     )
     _arg_group_from_schema(
         "", config_schema, arg_parser, treat_like_cli_exclusive_input=False

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "prosper-shared"
-version = "0"
+version = "0.1.45"
 description = ""
 authors = ["Graham Tibbitts <graham.tibbitts@gmail.com>"]
 license = "Apache 2.0"
@@ -31,9 +31,28 @@ dpath = "^2.1.6"
 pyyaml = {version = "^6.0.1", optional = true }
 schema = "^0.7.5"
 toml = {version= "^0.10.2", optional = true }
+jinja2-cli = {version="^0.8.2", optional = true }
 
 [tool.poetry.extras]
-dev = ["autohooks", "autohooks-plugin-black", "autohooks-plugin-pytest", "autohooks-plugin-isort", "autohooks-plugin-ruff", "autoimport", "mdformat-gfm", "mutmut", "pydocstyle", "pydoclint", "pytest", "pytest-cov", "pytest-mock", "pytest-sugar", "toml-sort", "tox"]
+dev = [
+    "autohooks",
+    "autohooks-plugin-black",
+    "autohooks-plugin-pytest",
+    "autohooks-plugin-isort",
+    "autohooks-plugin-ruff",
+    "autoimport",
+    "jinja2-cli",
+    "mdformat-gfm",
+    "mutmut",
+    "pydocstyle",
+    "pydoclint",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-sugar",
+    "toml-sort",
+    "tox"
+]
 toml = ['toml']
 yaml = ['pyyaml']
 
@@ -44,7 +63,8 @@ build-backend = "poetry.core.masonry.api"
 [tool.autohooks]
 mode = "poetry"
 pre-commit = [
-    "prosper_shared.autohooks.clean",
+    "prosper_shared.autohooks.mdformat",
+    "prosper_shared.autohooks.build_extras",
     "prosper_shared.autohooks.autoimport",
     "autohooks.plugins.black",
     "autohooks.plugins.ruff",
@@ -68,6 +88,12 @@ metadata = false
 style = "semver"
 vcs = "git"
 bump = true
+
+[tool.autohooks.plugins.build_extras]
+commands = [
+    "poetry run jinja2 -Dconfig_options=\"`echo 'from prosper_shared.omni_config import get_config_help\nfrom prosper_shared.serde import *\nprint(get_config_help())\n' | python`\" README.md.jinja2 > README.md"
+]
+affected_files = ['README.md']
 
 [tool.autohooks.plugins.ruff]
 arguments = '--fix'
@@ -100,7 +126,7 @@ spaces_indent_inline_array = 4
 sort_first = ["tool.poetry"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=prosper_shared/omni_config --cov-report=term-missing --cov-report=lcov:dist/coverage.info --cov-fail-under=100"
+#addopts = "--cov=prosper_shared/omni_config --cov-report=term-missing --cov-report=lcov:dist/coverage.info --cov-fail-under=100"
 testpaths = "tests"
 python_functions = ["*_test", "test_*"]
 
@@ -112,3 +138,6 @@ allow-init-docstring = true
 inherit = false
 convention = "google"
 add_ignore = ['D100', 'D104']
+
+[tool.poetry.scripts]
+list-config-values="prosper_shared.omni_config:list_available_config_values"

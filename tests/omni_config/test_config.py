@@ -5,9 +5,10 @@ from os.path import join
 
 import pytest
 from platformdirs import user_config_dir
-from schema import SchemaError
+from schema import Optional as SchemaOptional
+from schema import Regex, SchemaError
 
-from prosper_shared.omni_config import Config
+from prosper_shared.omni_config import Config, ConfigKey, get_config_help
 
 TEST_CONFIG = {
     "testSection": {
@@ -289,4 +290,78 @@ class TestConfig:
                 mocker.call().read(),
             ],
             any_order=False,
+        )
+
+    def test_get_config_help(self, mocker):
+        test_config_schema = {
+            ConfigKey("key1", description="key1 desc"): str,
+            SchemaOptional(ConfigKey("key2", "key2 desc", default=False)): bool,
+            ConfigKey("key3", "key3 desc"): Regex("regex_value"),
+            ConfigKey("key4", "key4 desc", False): bool,
+            "group1": {
+                ConfigKey("gkey1", description="gkey1 desc"): str,
+                ConfigKey("gkey2", "gkey3 desc", True): bool,
+            },
+        }
+        test_input_schema = {
+            ConfigKey("key6", "key6 desc"): str,
+            ConfigKey("key7", "key7 desc", default="default_value"): str,
+        }
+        realize_config_schemata_mock = mocker.patch(
+            "prosper_shared.omni_config._realize_config_schemata"
+        )
+        realize_input_schemata_mock = mocker.patch(
+            "prosper_shared.omni_config._realize_input_schemata"
+        )
+        realize_config_schemata_mock.return_value = [test_config_schema]
+        realize_input_schemata_mock.return_value = [test_input_schema]
+
+        assert get_config_help() == (
+            "{\n"
+            '  "key1": {\n'
+            '    "type": "str",\n'
+            '    "optional": false,\n'
+            '    "description": "key1 desc"\n'
+            "  },\n"
+            '  "key2": {\n'
+            '    "type": "bool",\n'
+            '    "optional": true,\n'
+            '    "description": "key2 desc"\n'
+            "  },\n"
+            '  "key3": {\n'
+            '    "type": "str",\n'
+            '    "optional": false,\n'
+            '    "constraint": "regex_value",\n'
+            '    "description": "key3 desc"\n'
+            "  },\n"
+            '  "key4": {\n'
+            '    "type": "bool",\n'
+            '    "optional": false,\n'
+            '    "description": "key4 desc"\n'
+            "  },\n"
+            '  "group1": {\n'
+            '    "gkey1": {\n'
+            '      "type": "str",\n'
+            '      "optional": false,\n'
+            '      "description": "gkey1 desc"\n'
+            "    },\n"
+            '    "gkey2": {\n'
+            '      "type": "bool",\n'
+            '      "optional": false,\n'
+            '      "default": true,\n'
+            '      "description": "gkey3 desc"\n'
+            "    }\n"
+            "  },\n"
+            '  "key6": {\n'
+            '    "type": "str",\n'
+            '    "optional": false,\n'
+            '    "description": "key6 desc"\n'
+            "  },\n"
+            '  "key7": {\n'
+            '    "type": "str",\n'
+            '    "optional": false,\n'
+            '    "default": "default_value",\n'
+            '    "description": "key7 desc"\n'
+            "  }\n"
+            "}"
         )

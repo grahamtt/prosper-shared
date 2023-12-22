@@ -1,6 +1,7 @@
 """Utility for declaring, parsing, merging, and validating configs."""
 
 import argparse
+import json
 from copy import deepcopy
 from decimal import Decimal
 from enum import Enum, EnumMeta
@@ -12,7 +13,8 @@ from typing import List, Optional, Union
 
 import dpath
 from platformdirs import user_config_dir
-from schema import Schema
+from schema import Optional as SchemaOptional
+from schema import Regex, Schema
 
 from prosper_shared.omni_config._define import (
     _arg_parse_from_schema as arg_parse_from_schema,
@@ -54,7 +56,6 @@ __all__ = [
     "ConfigKey",
     "input_schema",
     "InputType",
-    "SchemaType",
     "merge_config",
     "ArgParseSource",
     "ConfigurationSource",
@@ -63,6 +64,7 @@ __all__ = [
     "JsonConfigurationSource",
     "TomlConfigurationSource",
     "YamlConfigurationSource",
+    "get_config_help",
 ]
 
 
@@ -280,3 +282,54 @@ def _has_yaml():
 def _has_toml():
     """Tests whether the 'toml' package is available."""
     return find_spec("toml")
+
+
+def get_config_help():
+    """Returns a JSON string representing the config values available.
+
+    Returns
+        str: JSON string representing the available config values.
+    """
+    config_schemata = merge_config(_realize_config_schemata())
+    input_schemata = merge_config(_realize_input_schemata())
+    schema = merge_config([config_schemata, input_schemata])
+    help_struct = _build_help_struct(schema)
+    return json.dumps(help_struct, indent=2)
+
+
+def _build_help_struct(schema: SchemaType):
+    help_struct = {}
+    for k, v in schema.items():
+        is_optional = False
+        description = None
+        constraint = None
+        default = None
+        while isinstance(k, (ConfigKey, SchemaOptional)):
+            if isinstance(k, SchemaOptional):
+                is_optional = True
+            description = k.description if hasattr(k, "description") else description
+            default = k.default if hasattr(k, "default") else default
+            k = k.schema
+
+        if isinstance(v, dict):
+            help_struct[k] = _build_help_struct(v)
+        else:
+            if not description:
+                raise ValueError(f"No description provided for leaf config key {k}")
+            if isinstance(v, Regex):
+                type_name = "str"
+                constraint = v.pattern_str
+            elif callable(v):
+                type_name = v.__name__
+            else:
+                raise ValueError(f"Invalid config value type: {type(v)}")
+
+            help_struct[k] = {"type": type_name, "optional": is_optional}
+            if default:
+                help_struct[k]["default"] = default
+            if constraint:
+                help_struct[k]["constraint"] = constraint
+            if description:
+                help_struct[k]["description"] = description
+
+    return help_struct
