@@ -137,6 +137,16 @@ def _arg_parse_from_schema(
     return arg_parser
 
 
+def _key_to_enum_converter(enum):
+    def key_to_enum(key):
+        try:
+            return enum[key]
+        except KeyError:
+            raise TypeError(f"Unrecognized key {key} for enum {enum}")
+
+    return key_to_enum
+
+
 def _arg_group_from_schema(
     path: str, schema: _SchemaType, arg_group, treat_like_cli_exclusive_input: bool
 ) -> None:
@@ -179,12 +189,8 @@ def _arg_group_from_schema(
 
             if Enum in v.__mro__:
                 constraint_desc = "Type: str"
-                options = list(e.name for e in v)
-                default_desc = (
-                    default_desc.replace(f"{v.__name__}.", "")
-                    if default_desc
-                    else default_desc
-                )
+                options = list(e for e in v)
+                v = _key_to_enum_converter(v)
 
             helps = [description, constraint_desc]
             if default_desc:
@@ -201,6 +207,7 @@ def _arg_group_from_schema(
             if options:
                 kwargs["metavar"] = None
                 kwargs["choices"] = options
+
             if not has_default and treat_like_cli_exclusive_input:
                 # Produce a required positional argument for required input values that are arg-parse exclusive
                 arg_group.add_argument(**kwargs)

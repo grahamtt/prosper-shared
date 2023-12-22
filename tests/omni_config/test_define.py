@@ -1,4 +1,5 @@
 import sys
+from argparse import Namespace
 from enum import Enum
 from typing import Dict, List
 
@@ -23,6 +24,9 @@ from prosper_shared.omni_config._define import (
 class TestEnum(Enum):
     KEY1 = "VALUE1"
     KEY2 = "VALUE2"
+
+    def __str__(self):
+        return self.name
 
 
 class TestDefine:
@@ -99,7 +103,13 @@ class TestDefine:
     @pytest.mark.skipif(
         sys.version_info < (3, 10), reason="Argparse behavior changes after 3.9"
     )
-    def test_arg_parse_from_schema(self):
+    def test_arg_parse_from_schema(self, mocker):
+        mocker.patch.object(
+            sys,
+            "argv",
+            ["test-cli", "0123456789abcdef0123456789abcdef", "--key5=KEY1"],
+        )
+
         test_config_schema = {
             ConfigKey("key1", description="key1 desc"): str,
             ConfigKey("key2", "key2 desc"): bool,
@@ -142,6 +152,38 @@ class TestDefine:
             "  --gkey1 GKEY1       gkey1 desc; Type: str\n"
             "  --gkey2             gkey3 desc; Type: bool; Default: True\n"
         )
+        assert actual_arg_parse.parse_args() == Namespace(
+            key1=None,
+            key2=False,
+            key3=None,
+            key4=False,
+            key5=TestEnum.KEY1,
+            group1__gkey1=None,
+            group1__gkey2=False,
+            key6="0123456789abcdef0123456789abcdef",
+            key7=None,
+        )
+
+    @pytest.mark.skipif(
+        sys.version_info < (3, 10), reason="Argparse behavior changes after 3.9"
+    )
+    def test_arg_parse_from_schema_when_bad_cli_value(self, mocker):
+        mocker.patch.object(
+            sys,
+            "argv",
+            ["test-cli", "--key5=KEY3"],
+        )
+
+        test_config_schema = {
+            ConfigKey("key5", "key5 desc", default=TestEnum.KEY2): TestEnum,
+        }
+        test_input_schema = {}
+
+        with pytest.raises(SystemExit):
+            actual_arg_parse = _arg_parse_from_schema(
+                "pytest", test_config_schema, test_input_schema
+            )
+            actual_arg_parse.parse_args()
 
     def test_arg_parse_from_schema_if_missing_description(self):
         test_schema = {
