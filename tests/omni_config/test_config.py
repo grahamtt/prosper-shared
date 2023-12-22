@@ -160,10 +160,16 @@ class TestConfig:
 
         json_config_mock.assert_has_calls(
             [
-                mocker.call(join(user_config_dir("app_name1"), "config.json")),
-                mocker.call(join(user_config_dir("app_name2"), "config.json")),
-                mocker.call(join(getcwd(), ".app_name1.json")),
-                mocker.call(join(getcwd(), ".app_name2.json")),
+                mocker.call(
+                    join(user_config_dir("app_name1"), "config.json"),
+                    inject_at="app_name1",
+                ),
+                mocker.call(
+                    join(user_config_dir("app_name2"), "config.json"),
+                    inject_at="app_name2",
+                ),
+                mocker.call(join(getcwd(), ".app_name1.json"), inject_at="app_name1"),
+                mocker.call(join(getcwd(), ".app_name2.json"), inject_at="app_name2"),
                 mocker.call().read(),
                 mocker.call().read(),
                 mocker.call().read(),
@@ -174,14 +180,26 @@ class TestConfig:
 
         yaml_config_mock.assert_has_calls(
             [
-                mocker.call(join(user_config_dir("app_name1"), "config.yml")),
-                mocker.call(join(user_config_dir("app_name2"), "config.yml")),
-                mocker.call(join(user_config_dir("app_name1"), "config.yaml")),
-                mocker.call(join(user_config_dir("app_name2"), "config.yaml")),
-                mocker.call(join(getcwd(), ".app_name1.yml")),
-                mocker.call(join(getcwd(), ".app_name2.yml")),
-                mocker.call(join(getcwd(), ".app_name1.yaml")),
-                mocker.call(join(getcwd(), ".app_name2.yaml")),
+                mocker.call(
+                    join(user_config_dir("app_name1"), "config.yml"),
+                    inject_at="app_name1",
+                ),
+                mocker.call(
+                    join(user_config_dir("app_name2"), "config.yml"),
+                    inject_at="app_name2",
+                ),
+                mocker.call(
+                    join(user_config_dir("app_name1"), "config.yaml"),
+                    inject_at="app_name1",
+                ),
+                mocker.call(
+                    join(user_config_dir("app_name2"), "config.yaml"),
+                    inject_at="app_name2",
+                ),
+                mocker.call(join(getcwd(), ".app_name1.yml"), inject_at="app_name1"),
+                mocker.call(join(getcwd(), ".app_name2.yml"), inject_at="app_name2"),
+                mocker.call(join(getcwd(), ".app_name1.yaml"), inject_at="app_name1"),
+                mocker.call(join(getcwd(), ".app_name2.yaml"), inject_at="app_name2"),
                 mocker.call().read(),
                 mocker.call().read(),
                 mocker.call().read(),
@@ -196,17 +214,25 @@ class TestConfig:
 
         toml_config_mock.assert_has_calls(
             [
-                mocker.call(join(user_config_dir("app_name1"), "config.toml")),
-                mocker.call(join(user_config_dir("app_name2"), "config.toml")),
-                mocker.call(join(getcwd(), ".app_name1.toml")),
-                mocker.call(join(getcwd(), ".app_name2.toml")),
+                mocker.call(
+                    join(user_config_dir("app_name1"), "config.toml"),
+                    inject_at="app_name1",
+                ),
+                mocker.call(
+                    join(user_config_dir("app_name2"), "config.toml"),
+                    inject_at="app_name2",
+                ),
+                mocker.call(join(getcwd(), ".app_name1.toml"), inject_at="app_name1"),
+                mocker.call(join(getcwd(), ".app_name2.toml"), inject_at="app_name2"),
                 mocker.call(
                     join(getcwd(), ".pyproject.toml"),
                     "tools.app_name1",
+                    inject_at="app_name1",
                 ),
                 mocker.call(
                     join(getcwd(), ".pyproject.toml"),
                     "tools.app_name2",
+                    inject_at="app_name2",
                 ),
                 mocker.call().read(),
                 mocker.call().read(),
@@ -247,8 +273,11 @@ class TestConfig:
 
         json_config_mock.assert_has_calls(
             [
-                mocker.call(join(user_config_dir("app_name"), "config.json")),
-                mocker.call(join(getcwd(), ".app_name.json")),
+                mocker.call(
+                    join(user_config_dir("app_name"), "config.json"),
+                    inject_at="app_name",
+                ),
+                mocker.call(join(getcwd(), ".app_name.json"), inject_at="app_name"),
                 mocker.call().read(),
                 mocker.call().read(),
             ],
@@ -257,10 +286,16 @@ class TestConfig:
 
         yaml_config_mock.assert_has_calls(
             [
-                mocker.call(join(user_config_dir("app_name"), "config.yml")),
-                mocker.call(join(user_config_dir("app_name"), "config.yaml")),
-                mocker.call(join(getcwd(), ".app_name.yml")),
-                mocker.call(join(getcwd(), ".app_name.yaml")),
+                mocker.call(
+                    join(user_config_dir("app_name"), "config.yml"),
+                    inject_at="app_name",
+                ),
+                mocker.call(
+                    join(user_config_dir("app_name"), "config.yaml"),
+                    inject_at="app_name",
+                ),
+                mocker.call(join(getcwd(), ".app_name.yml"), inject_at="app_name"),
+                mocker.call(join(getcwd(), ".app_name.yaml"), inject_at="app_name"),
                 mocker.call().read(),
                 mocker.call().read(),
                 mocker.call().read(),
@@ -271,11 +306,15 @@ class TestConfig:
 
         toml_config_mock.assert_has_calls(
             [
-                mocker.call(join(user_config_dir("app_name"), "config.toml")),
-                mocker.call(join(getcwd(), ".app_name.toml")),
+                mocker.call(
+                    join(user_config_dir("app_name"), "config.toml"),
+                    inject_at="app_name",
+                ),
+                mocker.call(join(getcwd(), ".app_name.toml"), inject_at="app_name"),
                 mocker.call(
                     join(getcwd(), ".pyproject.toml"),
                     "tools.app_name",
+                    inject_at="app_name",
                 ),
                 mocker.call().read(),
                 mocker.call().read(),

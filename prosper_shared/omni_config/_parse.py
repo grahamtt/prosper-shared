@@ -24,9 +24,10 @@ class _ConfigurationSource:
 
 
 class _FileConfigurationSource(_ConfigurationSource):
-    def __init__(self, config_file_path, config_root=""):
+    def __init__(self, config_file_path, config_root="", inject_at=None):
         self._config_file_path = config_file_path
         self._config_root = config_root
+        self._inject_at = inject_at
 
     def read(self) -> dict:
         """Reads the given file and extracts the contents into a dict. It returns the subtree rooted at `config_root`.
@@ -56,6 +57,11 @@ class _FileConfigurationSource(_ConfigurationSource):
                 raise ValueError(
                     f"Expected to find `dict` at path {self._config_root}; found {type(config)} instead."
                 )
+
+        if self._inject_at:
+            new_config = {}
+            dpath.new(new_config, self._inject_at, config, separator=".")
+            config = new_config
 
         return config
 

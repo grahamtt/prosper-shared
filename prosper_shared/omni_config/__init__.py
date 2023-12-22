@@ -195,48 +195,66 @@ class Config:
         ]
 
         conf_sources += [
-            JsonConfigurationSource(join(user_config_dir(app_name), "config.json"))
+            JsonConfigurationSource(
+                join(user_config_dir(app_name), "config.json"), inject_at=app_name
+            )
             for app_name in app_names
         ]
         if _has_yaml():
             conf_sources += [
-                YamlConfigurationSource(join(user_config_dir(app_name), "config.yml"))
+                YamlConfigurationSource(
+                    join(user_config_dir(app_name), "config.yml"), inject_at=app_name
+                )
                 for app_name in app_names
             ]
             conf_sources += [
-                YamlConfigurationSource(join(user_config_dir(app_name), "config.yaml"))
+                YamlConfigurationSource(
+                    join(user_config_dir(app_name), "config.yaml"), inject_at=app_name
+                )
                 for app_name in app_names
             ]
 
         if _has_toml():
             conf_sources += [
-                TomlConfigurationSource(join(user_config_dir(app_name), "config.toml"))
+                TomlConfigurationSource(
+                    join(user_config_dir(app_name), "config.toml"), inject_at=app_name
+                )
                 for app_name in app_names
             ]
 
         conf_sources += [
-            JsonConfigurationSource(join(getcwd(), f".{app_name}.json"))
+            JsonConfigurationSource(
+                join(getcwd(), f".{app_name}.json"), inject_at=app_name
+            )
             for app_name in app_names
         ]
 
         if _has_yaml():
             conf_sources += [
-                YamlConfigurationSource(join(getcwd(), f".{app_name}.yml"))
+                YamlConfigurationSource(
+                    join(getcwd(), f".{app_name}.yml"), inject_at=app_name
+                )
                 for app_name in app_names
             ]
             conf_sources += [
-                YamlConfigurationSource(join(getcwd(), f".{app_name}.yaml"))
+                YamlConfigurationSource(
+                    join(getcwd(), f".{app_name}.yaml"), inject_at=app_name
+                )
                 for app_name in app_names
             ]
 
         if _has_toml():
             conf_sources += [
-                TomlConfigurationSource(join(getcwd(), f".{app_name}.toml"))
+                TomlConfigurationSource(
+                    join(getcwd(), f".{app_name}.toml"), inject_at=app_name
+                )
                 for app_name in app_names
             ]
             conf_sources += [
                 TomlConfigurationSource(
-                    join(getcwd(), ".pyproject.toml"), f"tools.{app_name}"
+                    join(getcwd(), ".pyproject.toml"),
+                    f"tools.{app_name}",
+                    inject_at=app_name,
                 )
                 for app_name in app_names
             ]
