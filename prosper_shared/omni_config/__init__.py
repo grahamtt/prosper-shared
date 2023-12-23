@@ -1,7 +1,6 @@
 """Utility for declaring, parsing, merging, and validating configs."""
 
 import argparse
-import json
 from copy import deepcopy
 from decimal import Decimal
 from enum import Enum, EnumMeta
@@ -12,6 +11,7 @@ from os.path import join
 from typing import List, Optional, Union
 
 import dpath
+import yaml
 from platformdirs import user_config_dir
 from schema import Optional as SchemaOptional
 from schema import Regex, Schema
@@ -324,11 +324,17 @@ def get_config_help():
     input_schemata = merge_config(_realize_input_schemata())
     schema = merge_config([config_schemata, input_schemata])
     help_struct = _build_help_struct(schema)
-    return json.dumps(help_struct, indent=2)
+
+    return yaml.dump(help_struct, width=120)
 
 
-def _build_help_struct(schema: SchemaType):
-    help_struct = {}
+def _build_help_struct(
+    schema: SchemaType, path: Optional[str] = None, help_struct=None
+):
+    if help_struct is None:
+        help_struct = {}
+    if path is None:
+        path = ""
     for k, v in schema.items():
         is_optional = False
         description = None
@@ -342,7 +348,7 @@ def _build_help_struct(schema: SchemaType):
             k = k.schema
 
         if isinstance(v, dict):
-            help_struct[k] = _build_help_struct(v)
+            _build_help_struct(v, f"{path}.{k}" if path else k, help_struct)
         else:
             if not description:
                 raise ValueError(f"No description provided for leaf config key {k}")
@@ -353,13 +359,13 @@ def _build_help_struct(schema: SchemaType):
                 type_name = v.__name__
             else:
                 raise ValueError(f"Invalid config value type: {type(v)}")
-
-            help_struct[k] = {"type": type_name, "optional": is_optional}
+            key = f"{path}.{k}"
+            help_struct[key] = {"type": type_name, "optional": is_optional}
             if default:
-                help_struct[k]["default"] = default
+                help_struct[key]["default"] = default
             if constraint:
-                help_struct[k]["constraint"] = constraint
+                help_struct[key]["constraint"] = constraint
             if description:
-                help_struct[k]["description"] = description
+                help_struct[key]["description"] = description
 
     return help_struct

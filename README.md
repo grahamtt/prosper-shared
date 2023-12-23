@@ -28,29 +28,21 @@ Util for serializing and deserializing Python objects based on type annotations.
 
 Available config values:
 
-```json
-{
-  "prosper_shared": {
-    "serde": {
-      "use-decimals": {
-        "type": "bool",
-        "optional": false,
-        "default": true,
-        "description": "Floating point values should be parsed as decimals instead of floats."
-      },
-      "parse-dates": {
-        "type": "bool",
-        "optional": false,
-        "default": true,
-        "description": "Date values represented as strings should be parsed into `date` and `datetime` objects. Supports ISO-8601-compliant date strings."
-      },
-      "parse-enums": {
-        "type": "bool",
-        "optional": false,
-        "default": true,
-        "description": "Enum values represented as strings should be parsed into their respective types."
-      }
-    }
-  }
-}
+```yaml
+prosper_shared.serde.parse-dates:
+  default: true
+  description: Date values represented as strings should be parsed into `date` and `datetime` objects. Supports ISO-8601-compliant
+    date strings.
+  optional: false
+  type: bool
+prosper_shared.serde.parse-enums:
+  default: true
+  description: Enum values represented as strings should be parsed into their respective types.
+  optional: false
+  type: bool
+prosper_shared.serde.use-decimals:
+  default: true
+  description: Floating point values should be parsed as decimals instead of floats.
+  optional: false
+  type: bool
 ```

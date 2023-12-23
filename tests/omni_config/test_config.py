@@ -356,53 +356,41 @@ class TestConfig:
         realize_input_schemata_mock.return_value = [test_input_schema]
 
         assert get_config_help() == (
-            "{\n"
-            '  "key1": {\n'
-            '    "type": "str",\n'
-            '    "optional": false,\n'
-            '    "description": "key1 desc"\n'
-            "  },\n"
-            '  "key2": {\n'
-            '    "type": "bool",\n'
-            '    "optional": true,\n'
-            '    "description": "key2 desc"\n'
-            "  },\n"
-            '  "key3": {\n'
-            '    "type": "str",\n'
-            '    "optional": false,\n'
-            '    "constraint": "regex_value",\n'
-            '    "description": "key3 desc"\n'
-            "  },\n"
-            '  "key4": {\n'
-            '    "type": "bool",\n'
-            '    "optional": false,\n'
-            '    "description": "key4 desc"\n'
-            "  },\n"
-            '  "group1": {\n'
-            '    "gkey1": {\n'
-            '      "type": "str",\n'
-            '      "optional": false,\n'
-            '      "description": "gkey1 desc"\n'
-            "    },\n"
-            '    "gkey2": {\n'
-            '      "type": "bool",\n'
-            '      "optional": false,\n'
-            '      "default": true,\n'
-            '      "description": "gkey3 desc"\n'
-            "    }\n"
-            "  },\n"
-            '  "key6": {\n'
-            '    "type": "str",\n'
-            '    "optional": false,\n'
-            '    "description": "key6 desc"\n'
-            "  },\n"
-            '  "key7": {\n'
-            '    "type": "str",\n'
-            '    "optional": false,\n'
-            '    "default": "default_value",\n'
-            '    "description": "key7 desc"\n'
-            "  }\n"
-            "}"
+            ".key1:\n"
+            "  description: key1 desc\n"
+            "  optional: false\n"
+            "  type: str\n"
+            ".key2:\n"
+            "  description: key2 desc\n"
+            "  optional: true\n"
+            "  type: bool\n"
+            ".key3:\n"
+            "  constraint: regex_value\n"
+            "  description: key3 desc\n"
+            "  optional: false\n"
+            "  type: str\n"
+            ".key4:\n"
+            "  description: key4 desc\n"
+            "  optional: false\n"
+            "  type: bool\n"
+            ".key6:\n"
+            "  description: key6 desc\n"
+            "  optional: false\n"
+            "  type: str\n"
+            ".key7:\n"
+            "  default: default_value\n"
+            "  description: key7 desc\n"
+            "  optional: false\n"
+            "  type: str\n"
+            "group1.gkey1:\n"
+            "  description: gkey1 desc\n"
+            "  optional: false\n"
+            "  type: str\n"
+            "group1.gkey2:\n"
+            "  default: true\n"
+            "  description: gkey3 desc\n"
+            "  optional: false\n"
+            "  type: bool\n"
         )
 
     def test_get_config_help_no_description(self, mocker):
