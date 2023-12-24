@@ -1,7 +1,7 @@
 """Contains utility methods and classes for defining a config schema."""
 
 import argparse
-from argparse import MetavarTypeHelpFormatter
+from argparse import BooleanOptionalAction, MetavarTypeHelpFormatter
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -156,8 +156,7 @@ def _arg_group_from_schema(
 ) -> None:
     for k, v in schema.items():
         description = ""
-        has_default = False
-        default_desc = ""
+        default = None
         options = None
 
         while isinstance(k, (_ConfigKey, SchemaOptional)):
@@ -166,10 +165,7 @@ def _arg_group_from_schema(
                 if hasattr(k, "description") and k.description
                 else description
             )
-            has_default = (
-                hasattr(k, "default") and k.default is not None
-            ) or has_default
-            default_desc = f"Default: {k.default}" if has_default else default_desc
+            default = k.default if hasattr(k, "default") else default
             k = k.schema
         if isinstance(v, dict):
             new_path = f"{path}__{k}" if path else k
@@ -201,13 +197,19 @@ def _arg_group_from_schema(
                 v = _key_to_enum_converter(v)
 
             helps = [description, constraint_desc]
-            if default_desc:
-                helps.append(default_desc)
+            if default:
+                helps.append(f"Default: {default}")
+
+            action = "store"
+            if v == bool and default is True:
+                action = BooleanOptionalAction
+            elif v == bool:
+                action = "store_true"
 
             kwargs = {
                 "dest": f"{path}__{k}" if path else k,
                 "help": "; ".join(helps),
-                "action": "store_true" if v == bool else "store",
+                "action": action,
             }
             if v != bool:
                 kwargs["type"] = v
@@ -216,7 +218,7 @@ def _arg_group_from_schema(
                 kwargs["metavar"] = None
                 kwargs["choices"] = options
 
-            if not has_default and treat_like_cli_exclusive_input:
+            if default is None and treat_like_cli_exclusive_input:
                 # Produce a required positional argument for required input values that are arg-parse exclusive
                 arg_group.add_argument(**kwargs)
             else:

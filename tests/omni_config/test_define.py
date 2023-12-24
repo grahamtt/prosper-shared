@@ -107,7 +107,12 @@ class TestDefine:
         mocker.patch.object(
             sys,
             "argv",
-            ["test-cli", "0123456789abcdef0123456789abcdef", "--key5=KEY1"],
+            [
+                "test-cli",
+                "0123456789abcdef0123456789abcdef",
+                "--key5=KEY1",
+                "--no-gkey2",
+            ],
         )
 
         test_config_schema = {
@@ -136,31 +141,31 @@ class TestDefine:
 
         assert actual_arg_parse.format_help() == (
             "usage: pytest [-h] [--key1 KEY1] [--key2] [--key3 KEY3] [--key4]\n"
-            "              [--key5 {KEY1,KEY2}] [--gkey1 GKEY1] [--gkey2] [--gkey3]\n"
-            "              [--gkey4 GKEY4] [--key7 KEY7]\n"
+            "              [--key5 {KEY1,KEY2}] [--gkey1 GKEY1] [--gkey2 | --no-gkey2]\n"
+            "              [--gkey3] [--gkey4 GKEY4] [--key7 KEY7]\n"
             "              KEY6\n"
             "\n"
             "positional arguments:\n"
-            "  KEY6                key6 desc; Type: str\n"
+            "  KEY6                 key6 desc; Type: str\n"
             "\n"
             "options:\n"
-            "  -h, --help          show this help message and exit\n"
-            "  --key1 KEY1         key1 desc; Type: str\n"
-            "  --key2              key2 desc; Type: bool\n"
-            "  --key3 KEY3         key3 desc; Type: str matching /regex_value/\n"
-            "  --key4              key4 desc; Type: bool; Default: False\n"
-            "  --key5 {KEY1,KEY2}  key5 desc; Type: str; Default: KEY2\n"
-            "  --key7 KEY7         key7 desc; Type: str; Default: default_value\n"
+            "  -h, --help           show this help message and exit\n"
+            "  --key1 KEY1          key1 desc; Type: str\n"
+            "  --key2               key2 desc; Type: bool\n"
+            "  --key3 KEY3          key3 desc; Type: str matching /regex_value/\n"
+            "  --key4               key4 desc; Type: bool\n"
+            "  --key5 {KEY1,KEY2}   key5 desc; Type: str; Default: KEY2\n"
+            "  --key7 KEY7          key7 desc; Type: str; Default: default_value\n"
             "\n"
             "group1:\n"
             "\n"
-            "  --gkey1 GKEY1       gkey1 desc; Type: str\n"
-            "  --gkey2             gkey2 desc; Type: bool; Default: True\n"
+            "  --gkey1 GKEY1        gkey1 desc; Type: str\n"
+            "  --gkey2, --no-gkey2  gkey2 desc; Type: bool; Default: True\n"
             "\n"
             "group1.group2:\n"
             "\n"
-            "  --gkey3             gkey3 desc; Type: bool\n"
-            "  --gkey4 GKEY4       gkey4 desc; Type: str; Default: NOOOO\n"
+            "  --gkey3              gkey3 desc; Type: bool\n"
+            "  --gkey4 GKEY4        gkey4 desc; Type: str; Default: NOOOO\n"
         )
         assert actual_arg_parse.parse_args() == Namespace(
             key1=None,
