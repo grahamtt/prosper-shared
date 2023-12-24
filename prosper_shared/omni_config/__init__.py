@@ -11,7 +11,6 @@ from os.path import join
 from typing import List, Optional, Union
 
 import dpath
-import yaml
 from platformdirs import user_config_dir
 from schema import Optional as SchemaOptional
 from schema import Regex, Schema
@@ -320,12 +319,14 @@ def get_config_help():
     Returns
         str: JSON string representing the available config values.
     """
+    import yaml  # noqa: autoimport
+
     config_schemata = merge_config(_realize_config_schemata())
     input_schemata = merge_config(_realize_input_schemata())
     schema = merge_config([config_schemata, input_schemata])
     help_struct = _build_help_struct(schema)
 
-    return yaml.dump(help_struct, width=120)
+    return yaml.dump(help_struct, width=94)
 
 
 def _build_help_struct(
