@@ -129,6 +129,7 @@ class TestDefine:
                     ConfigKey("gkey4", "gkey4 desc", default="NOOOO"): str,
                 },
             },
+            "group3": {"group4": {ConfigKey("gkey5", "gkey5 desc"): int}},
         }
         test_input_schema = {
             ConfigKey("key6", "key6 desc"): str,
@@ -142,7 +143,7 @@ class TestDefine:
         assert actual_arg_parse.format_help() == (
             "usage: pytest [-h] [--key1 KEY1] [--key2] [--key3 KEY3] [--key4]\n"
             "              [--key5 {KEY1,KEY2}] [--gkey1 GKEY1] [--gkey2 | --no-gkey2]\n"
-            "              [--gkey3] [--gkey4 GKEY4] [--key7 KEY7]\n"
+            "              [--gkey3] [--gkey4 GKEY4] [--gkey5 GKEY5] [--key7 KEY7]\n"
             "              KEY6\n"
             "\n"
             "positional arguments:\n"
@@ -158,14 +159,15 @@ class TestDefine:
             "  --key7 KEY7          key7 desc; Type: str; Default: default_value\n"
             "\n"
             "group1:\n"
-            "\n"
             "  --gkey1 GKEY1        gkey1 desc; Type: str\n"
             "  --gkey2, --no-gkey2  gkey2 desc; Type: bool; Default: True\n"
             "\n"
             "group1.group2:\n"
-            "\n"
             "  --gkey3              gkey3 desc; Type: bool\n"
             "  --gkey4 GKEY4        gkey4 desc; Type: str; Default: NOOOO\n"
+            "\n"
+            "group3.group4:\n"
+            "  --gkey5 GKEY5        gkey5 desc; Type: int\n"
         )
         assert actual_arg_parse.parse_args() == Namespace(
             key1=None,
@@ -177,6 +179,7 @@ class TestDefine:
             group1__gkey2=False,
             group1__group2__gkey3=False,
             group1__group2__gkey4=None,
+            group3__group4__gkey5=None,
             key6="0123456789abcdef0123456789abcdef",
             key7=None,
         )

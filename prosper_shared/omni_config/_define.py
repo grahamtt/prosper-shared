@@ -129,10 +129,10 @@ def _arg_parse_from_schema(
         prog_name, formatter_class=_NullRespectingMetavarTypeHelpFormatter, **kwargs
     )
     _arg_group_from_schema(
-        "", config_schema, arg_parser, arg_parser, treat_like_cli_exclusive_input=False
+        "", config_schema, arg_parser, treat_like_cli_exclusive_input=False
     )
     _arg_group_from_schema(
-        "", input_schema, arg_parser, arg_parser, treat_like_cli_exclusive_input=True
+        "", input_schema, arg_parser, treat_like_cli_exclusive_input=True
     )
     return arg_parser
 
@@ -151,9 +151,9 @@ def _arg_group_from_schema(
     path: str,
     schema: _SchemaType,
     arg_parser,
-    arg_group,
     treat_like_cli_exclusive_input: bool,
 ) -> None:
+    arg_group = None
     for k, v in schema.items():
         description = ""
         default = None
@@ -168,17 +168,17 @@ def _arg_group_from_schema(
             default = k.default if hasattr(k, "default") else default
             k = k.schema
         if isinstance(v, dict):
-            new_path = f"{path}__{k}" if path else k
             _arg_group_from_schema(
-                new_path,
+                f"{path}__{k}" if path else k,
                 v,
                 arg_parser,
-                arg_parser.add_argument_group(
-                    new_path.replace("__", "."), description=description
-                ),
                 treat_like_cli_exclusive_input,
             )
         else:
+            if not arg_group and path:
+                arg_group = arg_parser.add_argument_group(path.replace("__", "."))
+            elif not arg_group:
+                arg_group = arg_parser
             if not description:
                 raise ValueError(
                     f"No description provided for leaf config key {path}.{k}"
