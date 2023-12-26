@@ -160,7 +160,7 @@ class Config:
     @classmethod
     def autoconfig(
         cls,
-        app_names: Union[str, List[str]],
+        app_names: Union[None, str, List[str]] = None,
         arg_parse: argparse.ArgumentParser = None,
         validate: bool = False,
     ) -> "Config":
@@ -175,19 +175,21 @@ class Config:
         Config values found lower in the chain will override previous values for the same key.
 
         Args:
-            app_names (Union[str, List[str]]): An ordered list of app names for which look for configs.
+            app_names (Union[None, str, List[str]]): An ordered list of app names for which look for configs.
             arg_parse (argparse.ArgumentParser): A pre-configured argparse instance.
             validate (bool): Whether to validate the config prior to returning it.
 
         Returns:
             Config: A configured Config instance.
         """
-        if isinstance(app_names, str):
-            app_names = [app_names]
-
         config_schemata = merge_config(_realize_config_schemata())
         input_schemata = merge_config(_realize_input_schemata())
         schema = merge_config([config_schemata, input_schemata])
+
+        if app_names is None:
+            app_names = [k for k in config_schemata]
+        elif isinstance(app_names, str):
+            app_names = [app_names]
 
         conf_sources: List[ConfigurationSource] = [
             _extract_defaults_from_schema(schema)
@@ -277,7 +279,8 @@ class Config:
                 arg_parse
                 if arg_parse
                 else arg_parse_from_schema(
-                    app_names[-1], config_schemata, input_schemata
+                    config_schemata,
+                    input_schemata,
                 )
             )
         )

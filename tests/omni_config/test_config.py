@@ -331,6 +331,91 @@ class TestConfig:
             any_order=False,
         )
 
+    def test_autoconfig_default_app(self, mocker):
+        mocker.patch("sys.exit")
+        json_config_mock = mocker.patch(
+            "prosper_shared.omni_config.JsonConfigurationSource"
+        )
+        toml_config_mock = mocker.patch(
+            "prosper_shared.omni_config.TomlConfigurationSource"
+        )
+        yaml_config_mock = mocker.patch(
+            "prosper_shared.omni_config.YamlConfigurationSource"
+        )
+        env_config_mock = mocker.patch(
+            "prosper_shared.omni_config.EnvironmentVariableSource"
+        )
+
+        Config.autoconfig()
+
+        json_config_mock.assert_has_calls(
+            [
+                mocker.call(
+                    join(user_config_dir("prosper_shared"), "config.json"),
+                    inject_at="prosper_shared",
+                ),
+                mocker.call(
+                    join(getcwd(), ".prosper_shared.json"), inject_at="prosper_shared"
+                ),
+                mocker.call().read(),
+                mocker.call().read(),
+            ],
+            any_order=False,
+        )
+
+        yaml_config_mock.assert_has_calls(
+            [
+                mocker.call(
+                    join(user_config_dir("prosper_shared"), "config.yml"),
+                    inject_at="prosper_shared",
+                ),
+                mocker.call(
+                    join(user_config_dir("prosper_shared"), "config.yaml"),
+                    inject_at="prosper_shared",
+                ),
+                mocker.call(
+                    join(getcwd(), ".prosper_shared.yml"), inject_at="prosper_shared"
+                ),
+                mocker.call(
+                    join(getcwd(), ".prosper_shared.yaml"), inject_at="prosper_shared"
+                ),
+                mocker.call().read(),
+                mocker.call().read(),
+                mocker.call().read(),
+                mocker.call().read(),
+            ],
+            any_order=False,
+        )
+
+        toml_config_mock.assert_has_calls(
+            [
+                mocker.call(
+                    join(user_config_dir("prosper_shared"), "config.toml"),
+                    inject_at="prosper_shared",
+                ),
+                mocker.call(
+                    join(getcwd(), ".prosper_shared.toml"), inject_at="prosper_shared"
+                ),
+                mocker.call(
+                    join(getcwd(), ".pyproject.toml"),
+                    "tools.prosper_shared",
+                    inject_at="prosper_shared",
+                ),
+                mocker.call().read(),
+                mocker.call().read(),
+                mocker.call().read(),
+            ],
+            any_order=False,
+        )
+
+        env_config_mock.assert_has_calls(
+            [
+                mocker.call("PROSPER_SHARED", separator="__"),
+                mocker.call().read(),
+            ],
+            any_order=False,
+        )
+
     def test_get_config_help(self, mocker):
         test_config_schema = {
             ConfigKey("key1", description="key1 desc"): str,

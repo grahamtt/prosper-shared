@@ -137,14 +137,15 @@ class TestDefine:
         }
 
         actual_arg_parse = _arg_parse_from_schema(
-            "pytest", test_config_schema, test_input_schema
+            test_config_schema,
+            test_input_schema,
         )
 
         assert actual_arg_parse.format_help() == (
-            "usage: pytest [-h] [--key1 KEY1] [--key2] [--key3 KEY3] [--key4]\n"
-            "              [--key5 {KEY1,KEY2}] [--gkey1 GKEY1] [--gkey2 | --no-gkey2]\n"
-            "              [--gkey3] [--gkey4 GKEY4] [--gkey5 GKEY5] [--key7 KEY7]\n"
-            "              KEY6\n"
+            "usage: test-cli [-h] [--key1 KEY1] [--key2] [--key3 KEY3] [--key4]\n"
+            "                [--key5 {KEY1,KEY2}] [--gkey1 GKEY1] [--gkey2 | --no-gkey2]\n"
+            "                [--gkey3] [--gkey4 GKEY4] [--gkey5 GKEY5] [--key7 KEY7]\n"
+            "                KEY6\n"
             "\n"
             "positional arguments:\n"
             "  KEY6                 key6 desc; Type: str\n"
@@ -201,7 +202,7 @@ class TestDefine:
 
         with pytest.raises(SystemExit):
             actual_arg_parse = _arg_parse_from_schema(
-                "pytest", test_config_schema, test_input_schema
+                test_config_schema, test_input_schema
             )
             actual_arg_parse.parse_args()
 
@@ -211,7 +212,7 @@ class TestDefine:
         }
 
         with pytest.raises(ValueError):
-            _arg_parse_from_schema("pytest", test_schema, {})
+            _arg_parse_from_schema(test_schema, {})
 
     def test_arg_parse_from_schema_if_type_not_callable(self):
         test_schema = {
@@ -219,4 +220,4 @@ class TestDefine:
         }
 
         with pytest.raises(ValueError):
-            _arg_parse_from_schema("pytest", test_schema, {})
+            _arg_parse_from_schema(test_schema, {})
