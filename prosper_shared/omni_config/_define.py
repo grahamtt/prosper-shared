@@ -56,6 +56,12 @@ class _ConfigKey:
 
         return val
 
+    def __repr__(self):
+        return f"ConfigKey(expected_val={self._expected_val},description={self._description},default={self._default})"
+
+    def __str__(self):
+        return self.__repr__()
+
     @property
     def schema(self):
         return self._expected_val

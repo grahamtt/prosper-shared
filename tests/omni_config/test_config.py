@@ -162,13 +162,13 @@ class TestConfig:
             [
                 mocker.call(
                     join(user_config_dir("app-name1"), "config.json"),
-                    inject_at="app_name1",
+                    inject_at="app-name1",
                 ),
                 mocker.call(
                     join(user_config_dir("app_name2"), "config.json"),
                     inject_at="app_name2",
                 ),
-                mocker.call(join(getcwd(), ".app-name1.json"), inject_at="app_name1"),
+                mocker.call(join(getcwd(), ".app-name1.json"), inject_at="app-name1"),
                 mocker.call(join(getcwd(), ".app_name2.json"), inject_at="app_name2"),
                 mocker.call().read(),
                 mocker.call().read(),
@@ -182,7 +182,7 @@ class TestConfig:
             [
                 mocker.call(
                     join(user_config_dir("app-name1"), "config.yml"),
-                    inject_at="app_name1",
+                    inject_at="app-name1",
                 ),
                 mocker.call(
                     join(user_config_dir("app_name2"), "config.yml"),
@@ -190,15 +190,15 @@ class TestConfig:
                 ),
                 mocker.call(
                     join(user_config_dir("app-name1"), "config.yaml"),
-                    inject_at="app_name1",
+                    inject_at="app-name1",
                 ),
                 mocker.call(
                     join(user_config_dir("app_name2"), "config.yaml"),
                     inject_at="app_name2",
                 ),
-                mocker.call(join(getcwd(), ".app-name1.yml"), inject_at="app_name1"),
+                mocker.call(join(getcwd(), ".app-name1.yml"), inject_at="app-name1"),
                 mocker.call(join(getcwd(), ".app_name2.yml"), inject_at="app_name2"),
-                mocker.call(join(getcwd(), ".app-name1.yaml"), inject_at="app_name1"),
+                mocker.call(join(getcwd(), ".app-name1.yaml"), inject_at="app-name1"),
                 mocker.call(join(getcwd(), ".app_name2.yaml"), inject_at="app_name2"),
                 mocker.call().read(),
                 mocker.call().read(),
@@ -216,18 +216,18 @@ class TestConfig:
             [
                 mocker.call(
                     join(user_config_dir("app-name1"), "config.toml"),
-                    inject_at="app_name1",
+                    inject_at="app-name1",
                 ),
                 mocker.call(
                     join(user_config_dir("app_name2"), "config.toml"),
                     inject_at="app_name2",
                 ),
-                mocker.call(join(getcwd(), ".app-name1.toml"), inject_at="app_name1"),
+                mocker.call(join(getcwd(), ".app-name1.toml"), inject_at="app-name1"),
                 mocker.call(join(getcwd(), ".app_name2.toml"), inject_at="app_name2"),
                 mocker.call(
                     join(getcwd(), ".pyproject.toml"),
                     "tools.app-name1",
-                    inject_at="app_name1",
+                    inject_at="app-name1",
                 ),
                 mocker.call(
                     join(getcwd(), ".pyproject.toml"),
@@ -351,11 +351,11 @@ class TestConfig:
         json_config_mock.assert_has_calls(
             [
                 mocker.call(
-                    join(user_config_dir("prosper_shared"), "config.json"),
-                    inject_at="prosper_shared",
+                    join(user_config_dir("prosper-shared"), "config.json"),
+                    inject_at="prosper-shared",
                 ),
                 mocker.call(
-                    join(getcwd(), ".prosper_shared.json"), inject_at="prosper_shared"
+                    join(getcwd(), ".prosper-shared.json"), inject_at="prosper-shared"
                 ),
                 mocker.call().read(),
                 mocker.call().read(),
@@ -366,18 +366,18 @@ class TestConfig:
         yaml_config_mock.assert_has_calls(
             [
                 mocker.call(
-                    join(user_config_dir("prosper_shared"), "config.yml"),
-                    inject_at="prosper_shared",
+                    join(user_config_dir("prosper-shared"), "config.yml"),
+                    inject_at="prosper-shared",
                 ),
                 mocker.call(
-                    join(user_config_dir("prosper_shared"), "config.yaml"),
-                    inject_at="prosper_shared",
+                    join(user_config_dir("prosper-shared"), "config.yaml"),
+                    inject_at="prosper-shared",
                 ),
                 mocker.call(
-                    join(getcwd(), ".prosper_shared.yml"), inject_at="prosper_shared"
+                    join(getcwd(), ".prosper-shared.yml"), inject_at="prosper-shared"
                 ),
                 mocker.call(
-                    join(getcwd(), ".prosper_shared.yaml"), inject_at="prosper_shared"
+                    join(getcwd(), ".prosper-shared.yaml"), inject_at="prosper-shared"
                 ),
                 mocker.call().read(),
                 mocker.call().read(),
@@ -390,16 +390,16 @@ class TestConfig:
         toml_config_mock.assert_has_calls(
             [
                 mocker.call(
-                    join(user_config_dir("prosper_shared"), "config.toml"),
-                    inject_at="prosper_shared",
+                    join(user_config_dir("prosper-shared"), "config.toml"),
+                    inject_at="prosper-shared",
                 ),
                 mocker.call(
-                    join(getcwd(), ".prosper_shared.toml"), inject_at="prosper_shared"
+                    join(getcwd(), ".prosper-shared.toml"), inject_at="prosper-shared"
                 ),
                 mocker.call(
                     join(getcwd(), ".pyproject.toml"),
-                    "tools.prosper_shared",
-                    inject_at="prosper_shared",
+                    "tools.prosper-shared",
+                    inject_at="prosper-shared",
                 ),
                 mocker.call().read(),
                 mocker.call().read(),

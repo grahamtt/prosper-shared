@@ -198,7 +198,7 @@ class Config:
         conf_sources += [
             JsonConfigurationSource(
                 join(user_config_dir(app_name), "config.json"),
-                inject_at=_kebab_case_to_lower_train_case(app_name),
+                inject_at=app_name,
             )
             for app_name in app_names
         ]
@@ -206,14 +206,14 @@ class Config:
             conf_sources += [
                 YamlConfigurationSource(
                     join(user_config_dir(app_name), "config.yml"),
-                    inject_at=_kebab_case_to_lower_train_case(app_name),
+                    inject_at=app_name,
                 )
                 for app_name in app_names
             ]
             conf_sources += [
                 YamlConfigurationSource(
                     join(user_config_dir(app_name), "config.yaml"),
-                    inject_at=_kebab_case_to_lower_train_case(app_name),
+                    inject_at=app_name,
                 )
                 for app_name in app_names
             ]
@@ -222,7 +222,7 @@ class Config:
             conf_sources += [
                 TomlConfigurationSource(
                     join(user_config_dir(app_name), "config.toml"),
-                    inject_at=_kebab_case_to_lower_train_case(app_name),
+                    inject_at=app_name,
                 )
                 for app_name in app_names
             ]
@@ -230,7 +230,7 @@ class Config:
         conf_sources += [
             JsonConfigurationSource(
                 join(getcwd(), f".{app_name}.json"),
-                inject_at=_kebab_case_to_lower_train_case(app_name),
+                inject_at=app_name,
             )
             for app_name in app_names
         ]
@@ -239,14 +239,14 @@ class Config:
             conf_sources += [
                 YamlConfigurationSource(
                     join(getcwd(), f".{app_name}.yml"),
-                    inject_at=_kebab_case_to_lower_train_case(app_name),
+                    inject_at=app_name,
                 )
                 for app_name in app_names
             ]
             conf_sources += [
                 YamlConfigurationSource(
                     join(getcwd(), f".{app_name}.yaml"),
-                    inject_at=_kebab_case_to_lower_train_case(app_name),
+                    inject_at=app_name,
                 )
                 for app_name in app_names
             ]
@@ -255,7 +255,7 @@ class Config:
             conf_sources += [
                 TomlConfigurationSource(
                     join(getcwd(), f".{app_name}.toml"),
-                    inject_at=_kebab_case_to_lower_train_case(app_name),
+                    inject_at=app_name,
                 )
                 for app_name in app_names
             ]
@@ -263,7 +263,7 @@ class Config:
                 TomlConfigurationSource(
                     join(getcwd(), ".pyproject.toml"),
                     f"tools.{app_name}",
-                    inject_at=_kebab_case_to_lower_train_case(app_name),
+                    inject_at=app_name,
                 )
                 for app_name in app_names
             ]
@@ -302,8 +302,8 @@ def _kebab_case_to_upper_train_case(name: str) -> str:
     return name.replace("-", "_").upper()
 
 
-def _kebab_case_to_lower_train_case(name: str) -> str:
-    return name.replace("-", "_").lower()
+# def _kebab_case_to_lower_train_case(name: str) -> str:
+#     return name.replace("-", "_").lower()
 
 
 def _has_yaml():

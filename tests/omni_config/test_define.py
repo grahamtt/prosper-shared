@@ -221,3 +221,9 @@ class TestDefine:
 
         with pytest.raises(ValueError):
             _arg_parse_from_schema(test_schema, {})
+
+    def test_config_key_str(self):
+        assert (
+            str(ConfigKey("key", "value", "default"))
+            == "ConfigKey(expected_val=key,description=value,default=default)"
+        )

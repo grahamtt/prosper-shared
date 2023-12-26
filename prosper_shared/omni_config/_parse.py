@@ -1,6 +1,7 @@
 """Contains utility methods and classes for parsing configs from different sources."""
 
 import argparse
+import logging
 import os
 from abc import abstractmethod
 from typing import Dict, List, Optional, Union
@@ -9,6 +10,8 @@ import dpath
 from schema import Optional as SchemaOptional
 
 from prosper_shared.omni_config._define import _ConfigKey, _SchemaType
+
+logger = logging.getLogger(__file__)
 
 
 class _ConfigurationSource:
@@ -39,7 +42,12 @@ class _FileConfigurationSource(_ConfigurationSource):
             ValueError: If the config root path references a terminal value instead of a config tree.
         """
         if not os.path.exists(self._config_file_path):
+            logger.debug(
+                f"Config file not found: {self._config_file_path}; skipping..."
+            )
             return {}
+
+        logger.debug(f"Reading config file {self._config_file_path}...")
 
         config = self._read_file(self._config_file_path)
 

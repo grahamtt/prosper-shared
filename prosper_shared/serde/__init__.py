@@ -21,15 +21,15 @@ __all__ = ["Serde"]
 
 _object_hooks_by_type = {}
 
-_USE_DECIMALS_CONFIG_PATH = "prosper_shared.serde.use-decimals"
-_PARSE_DATES_CONFIG_PATH = "prosper_shared.serde.parse-dates"
-_PARSE_ENUMS_CONFIG_PATH = "prosper_shared.serde.parse-enums"
+_USE_DECIMALS_CONFIG_PATH = "prosper-shared.serde.use-decimals"
+_PARSE_DATES_CONFIG_PATH = "prosper-shared.serde.parse-dates"
+_PARSE_ENUMS_CONFIG_PATH = "prosper-shared.serde.parse-enums"
 
 
 @config_schema
 def _schema() -> SchemaType:
     return {
-        "prosper_shared": {
+        "prosper-shared": {
             "serde": {
                 ConfigKey(
                     "use-decimals",
