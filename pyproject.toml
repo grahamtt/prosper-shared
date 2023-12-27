@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "prosper-shared"
-version = "0.1.45"
+version = "0"
 description = ""
 authors = ["Graham Tibbitts <graham.tibbitts@gmail.com>"]
 license = "Apache 2.0"
@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
 
+case-converter = "^1.1.0"
 deepmerge = "^1.1.0"
 dpath = "^2.1.6"
 platformdirs = "^4.1.0"

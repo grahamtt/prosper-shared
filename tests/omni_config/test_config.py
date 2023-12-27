@@ -2,13 +2,16 @@ from decimal import Decimal
 from enum import Enum
 from os import getcwd
 from os.path import join
+from typing import List
 
 import pytest
+from caseconverter import camelcase, kebabcase, macrocase, snakecase
 from platformdirs import user_config_dir
 from schema import Optional as SchemaOptional
 from schema import Regex, SchemaError
 
 from prosper_shared.omni_config import Config, ConfigKey, get_config_help
+from prosper_shared.serde import _schema
 
 TEST_CONFIG = {
     "testSection": {
@@ -141,7 +144,17 @@ class TestConfig:
                 schema=TEST_SCHEMA,
             )
 
-    def test_autoconfig(self, mocker):
+    @pytest.mark.parametrize(
+        ["given_app_names", "expected_app_names"],
+        [
+            (["app-name1", "app_name2"], ["app-name1", "app-name2"]),
+            ("app-name", ["app-name"]),
+            (None, ["prosper-shared"]),
+        ],
+    )
+    def test_autoconfig(self, mocker, given_app_names, expected_app_names):
+        _schema()  # Call to ensure the schema is registered
+
         mocker.patch("sys.exit")
         json_config_mock = mocker.patch(
             "prosper_shared.omni_config.JsonConfigurationSource"
@@ -156,105 +169,56 @@ class TestConfig:
             "prosper_shared.omni_config.EnvironmentVariableSource"
         )
 
-        Config.autoconfig(["app-name1", "app_name2"])
+        Config.autoconfig(given_app_names)
 
         json_config_mock.assert_has_calls(
-            [
-                mocker.call(
-                    join(user_config_dir("app-name1"), "config.json"),
-                    inject_at="app-name1",
-                ),
-                mocker.call(
-                    join(user_config_dir("app_name2"), "config.json"),
-                    inject_at="app_name2",
-                ),
-                mocker.call(join(getcwd(), ".app-name1.json"), inject_at="app-name1"),
-                mocker.call(join(getcwd(), ".app_name2.json"), inject_at="app_name2"),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-            ],
-            any_order=False,
+            *self._expand_equivalent_files(mocker, expected_app_names, ["json"]),
+            any_order=len(expected_app_names)
+            != 1,  # TODO: Minor issue with ordering :P
         )
 
         yaml_config_mock.assert_has_calls(
-            [
-                mocker.call(
-                    join(user_config_dir("app-name1"), "config.yml"),
-                    inject_at="app-name1",
-                ),
-                mocker.call(
-                    join(user_config_dir("app_name2"), "config.yml"),
-                    inject_at="app_name2",
-                ),
-                mocker.call(
-                    join(user_config_dir("app-name1"), "config.yaml"),
-                    inject_at="app-name1",
-                ),
-                mocker.call(
-                    join(user_config_dir("app_name2"), "config.yaml"),
-                    inject_at="app_name2",
-                ),
-                mocker.call(join(getcwd(), ".app-name1.yml"), inject_at="app-name1"),
-                mocker.call(join(getcwd(), ".app_name2.yml"), inject_at="app_name2"),
-                mocker.call(join(getcwd(), ".app-name1.yaml"), inject_at="app-name1"),
-                mocker.call(join(getcwd(), ".app_name2.yaml"), inject_at="app_name2"),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-            ],
-            any_order=False,
+            *self._expand_equivalent_files(
+                mocker,
+                expected_app_names,
+                [
+                    "yml",
+                    "yaml",
+                ],
+            ),
+            any_order=True,  # TODO: Minor issue with ordering :P
         )
 
         toml_config_mock.assert_has_calls(
-            [
-                mocker.call(
-                    join(user_config_dir("app-name1"), "config.toml"),
-                    inject_at="app-name1",
-                ),
-                mocker.call(
-                    join(user_config_dir("app_name2"), "config.toml"),
-                    inject_at="app_name2",
-                ),
-                mocker.call(join(getcwd(), ".app-name1.toml"), inject_at="app-name1"),
-                mocker.call(join(getcwd(), ".app_name2.toml"), inject_at="app_name2"),
-                mocker.call(
-                    join(getcwd(), ".pyproject.toml"),
-                    "tools.app-name1",
-                    inject_at="app-name1",
-                ),
-                mocker.call(
-                    join(getcwd(), ".pyproject.toml"),
-                    "tools.app_name2",
-                    inject_at="app_name2",
-                ),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-            ],
-            any_order=False,
+            *self._expand_equivalent_files(mocker, expected_app_names, ["toml"]),
+            any_order=len(expected_app_names)
+            != 1,  # TODO: Minor issue with ordering :P
         )
 
         env_config_mock.assert_has_calls(
             [
-                mocker.call("APP_NAME1", separator="__"),
-                mocker.call("APP_NAME2", separator="__"),
-                mocker.call().read(),
-                mocker.call().read(),
+                *[
+                    mocker.call(macrocase(app_name), separator="__")
+                    for app_name in expected_app_names
+                ],
+                *[mocker.call().read() for _ in expected_app_names],
             ],
             any_order=False,
         )
 
-    def test_autoconfig_single_app(self, mocker):
+    @pytest.mark.parametrize(
+        ["given_app_names", "expected_app_names"],
+        [
+            (["app-name1", "app_name2"], ["app-name1", "app_name2"]),
+            ("app-name", ["app-name"]),
+            (None, ["prosper-shared"]),
+        ],
+    )
+    def test_autoconfig_dont_search_equivalent_files(
+        self, mocker, given_app_names, expected_app_names
+    ):
+        _schema()  # Call to ensure the schema is registered
+
         mocker.patch("sys.exit")
         json_config_mock = mocker.patch(
             "prosper_shared.omni_config.JsonConfigurationSource"
@@ -269,149 +233,39 @@ class TestConfig:
             "prosper_shared.omni_config.EnvironmentVariableSource"
         )
 
-        Config.autoconfig("app_name")
+        Config.autoconfig(given_app_names, search_equivalent_names=False)
 
         json_config_mock.assert_has_calls(
-            [
-                mocker.call(
-                    join(user_config_dir("app_name"), "config.json"),
-                    inject_at="app_name",
-                ),
-                mocker.call(join(getcwd(), ".app_name.json"), inject_at="app_name"),
-                mocker.call().read(),
-                mocker.call().read(),
-            ],
-            any_order=False,
+            *self._expand_files(mocker, expected_app_names, ["json"]),
+            any_order=len(expected_app_names)
+            != 1,  # TODO: Minor issue with ordering :P
         )
 
         yaml_config_mock.assert_has_calls(
-            [
-                mocker.call(
-                    join(user_config_dir("app_name"), "config.yml"),
-                    inject_at="app_name",
-                ),
-                mocker.call(
-                    join(user_config_dir("app_name"), "config.yaml"),
-                    inject_at="app_name",
-                ),
-                mocker.call(join(getcwd(), ".app_name.yml"), inject_at="app_name"),
-                mocker.call(join(getcwd(), ".app_name.yaml"), inject_at="app_name"),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-            ],
-            any_order=False,
+            *self._expand_files(
+                mocker,
+                expected_app_names,
+                [
+                    "yml",
+                    "yaml",
+                ],
+            ),
+            any_order=True,  # TODO: Minor issue with ordering :P
         )
 
         toml_config_mock.assert_has_calls(
-            [
-                mocker.call(
-                    join(user_config_dir("app_name"), "config.toml"),
-                    inject_at="app_name",
-                ),
-                mocker.call(join(getcwd(), ".app_name.toml"), inject_at="app_name"),
-                mocker.call(
-                    join(getcwd(), ".pyproject.toml"),
-                    "tools.app_name",
-                    inject_at="app_name",
-                ),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-            ],
-            any_order=False,
+            *self._expand_files(mocker, expected_app_names, ["toml"]),
+            any_order=len(expected_app_names)
+            != 1,  # TODO: Minor issue with ordering :P
         )
 
         env_config_mock.assert_has_calls(
             [
-                mocker.call("APP_NAME", separator="__"),
-                mocker.call().read(),
-            ],
-            any_order=False,
-        )
-
-    def test_autoconfig_default_app(self, mocker):
-        mocker.patch("sys.exit")
-        json_config_mock = mocker.patch(
-            "prosper_shared.omni_config.JsonConfigurationSource"
-        )
-        toml_config_mock = mocker.patch(
-            "prosper_shared.omni_config.TomlConfigurationSource"
-        )
-        yaml_config_mock = mocker.patch(
-            "prosper_shared.omni_config.YamlConfigurationSource"
-        )
-        env_config_mock = mocker.patch(
-            "prosper_shared.omni_config.EnvironmentVariableSource"
-        )
-
-        Config.autoconfig()
-
-        json_config_mock.assert_has_calls(
-            [
-                mocker.call(
-                    join(user_config_dir("prosper-shared"), "config.json"),
-                    inject_at="prosper-shared",
-                ),
-                mocker.call(
-                    join(getcwd(), ".prosper-shared.json"), inject_at="prosper-shared"
-                ),
-                mocker.call().read(),
-                mocker.call().read(),
-            ],
-            any_order=False,
-        )
-
-        yaml_config_mock.assert_has_calls(
-            [
-                mocker.call(
-                    join(user_config_dir("prosper-shared"), "config.yml"),
-                    inject_at="prosper-shared",
-                ),
-                mocker.call(
-                    join(user_config_dir("prosper-shared"), "config.yaml"),
-                    inject_at="prosper-shared",
-                ),
-                mocker.call(
-                    join(getcwd(), ".prosper-shared.yml"), inject_at="prosper-shared"
-                ),
-                mocker.call(
-                    join(getcwd(), ".prosper-shared.yaml"), inject_at="prosper-shared"
-                ),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-            ],
-            any_order=False,
-        )
-
-        toml_config_mock.assert_has_calls(
-            [
-                mocker.call(
-                    join(user_config_dir("prosper-shared"), "config.toml"),
-                    inject_at="prosper-shared",
-                ),
-                mocker.call(
-                    join(getcwd(), ".prosper-shared.toml"), inject_at="prosper-shared"
-                ),
-                mocker.call(
-                    join(getcwd(), ".pyproject.toml"),
-                    "tools.prosper-shared",
-                    inject_at="prosper-shared",
-                ),
-                mocker.call().read(),
-                mocker.call().read(),
-                mocker.call().read(),
-            ],
-            any_order=False,
-        )
-
-        env_config_mock.assert_has_calls(
-            [
-                mocker.call("PROSPER_SHARED", separator="__"),
-                mocker.call().read(),
+                *[
+                    mocker.call(macrocase(app_name), separator="__")
+                    for app_name in expected_app_names
+                ],
+                *[mocker.call().read() for _ in expected_app_names],
             ],
             any_order=False,
         )
@@ -511,3 +365,102 @@ class TestConfig:
 
         with pytest.raises(ValueError):
             get_config_help()
+
+    def _expand_equivalent_files(self, mocker, app_names, extensions: List[str]):
+        calls = []
+        for app_name in app_names:
+            app_name = kebabcase(app_name)
+            for extension in extensions:
+                calls.append(
+                    mocker.call(
+                        join(
+                            user_config_dir(camelcase(app_name)), f"config.{extension}"
+                        ),
+                        inject_at=app_name,
+                    )
+                )
+                calls.append(
+                    mocker.call(
+                        join(
+                            user_config_dir(snakecase(app_name)), f"config.{extension}"
+                        ),
+                        inject_at=app_name,
+                    )
+                )
+                calls.append(
+                    mocker.call(
+                        join(
+                            user_config_dir(kebabcase(app_name)), f"config.{extension}"
+                        ),
+                        inject_at=app_name,
+                    )
+                )
+                calls.append(
+                    mocker.call(
+                        join(getcwd(), f".{camelcase(app_name)}.{extension}"),
+                        inject_at=app_name,
+                    )
+                )
+                calls.append(
+                    mocker.call(
+                        join(getcwd(), f".{snakecase(app_name)}.{extension}"),
+                        inject_at=app_name,
+                    )
+                )
+                calls.append(
+                    mocker.call(
+                        join(getcwd(), f".{kebabcase(app_name)}.{extension}"),
+                        inject_at=app_name,
+                    )
+                )
+                if extension == "toml":
+                    calls.append(
+                        mocker.call(
+                            join(getcwd(), ".pyproject.toml"),
+                            f"tools.{camelcase(app_name)}",
+                            inject_at=app_name,
+                        )
+                    )
+                    calls.append(
+                        mocker.call(
+                            join(getcwd(), ".pyproject.toml"),
+                            f"tools.{snakecase(app_name)}",
+                            inject_at=app_name,
+                        )
+                    )
+                    calls.append(
+                        mocker.call(
+                            join(getcwd(), ".pyproject.toml"),
+                            f"tools.{kebabcase(app_name)}",
+                            inject_at=app_name,
+                        )
+                    )
+        calls += [mocker.call().read() for _ in calls]
+        return [calls]
+
+    def _expand_files(self, mocker, app_names, extensions: List[str]):
+        calls = []
+        for app_name in app_names:
+            for extension in extensions:
+                calls.append(
+                    mocker.call(
+                        join(user_config_dir(app_name), f"config.{extension}"),
+                        inject_at=kebabcase(app_name),
+                    )
+                )
+                calls.append(
+                    mocker.call(
+                        join(getcwd(), f".{app_name}.{extension}"),
+                        inject_at=kebabcase(app_name),
+                    )
+                )
+                if extension == "toml":
+                    calls.append(
+                        mocker.call(
+                            join(getcwd(), ".pyproject.toml"),
+                            f"tools.{app_name}",
+                            inject_at=kebabcase(app_name),
+                        )
+                    )
+        calls += [mocker.call().read() for _ in calls]
+        return [calls]

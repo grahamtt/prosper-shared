@@ -11,6 +11,7 @@ from os.path import join
 from typing import List, Optional, Union
 
 import dpath
+from caseconverter import camelcase, kebabcase, macrocase, snakecase
 from platformdirs import user_config_dir
 from schema import Optional as SchemaOptional
 from schema import Regex, Schema
@@ -163,6 +164,7 @@ class Config:
         app_names: Union[None, str, List[str]] = None,
         arg_parse: argparse.ArgumentParser = None,
         validate: bool = False,
+        search_equivalent_names: bool = True,
     ) -> "Config":
         """Sets up a Config with default configuration sources.
 
@@ -172,12 +174,17 @@ class Config:
         3. Environment variables prefixed by 'APP_NAME_' for each of the given app names.
         4. The given argparse instance.
 
+        If `search_equivalent_names` is set, search for config locations with equivalent names in different casing
+        styles, e.g. 'config-name` -> `configName` and `config_name`.
+
         Config values found lower in the chain will override previous values for the same key.
 
         Args:
             app_names (Union[None, str, List[str]]): An ordered list of app names for which look for configs.
             arg_parse (argparse.ArgumentParser): A pre-configured argparse instance.
             validate (bool): Whether to validate the config prior to returning it.
+            search_equivalent_names (bool): Whether equivalent names to the given app names should be included in the
+                config location search.
 
         Returns:
             Config: A configured Config instance.
@@ -191,6 +198,16 @@ class Config:
         elif isinstance(app_names, str):
             app_names = [app_names]
 
+        if search_equivalent_names:
+            file_app_name_dedup = {}
+            for app_name in app_names:
+                file_app_name_dedup[camelcase(app_name)] = None
+                file_app_name_dedup[snakecase(app_name)] = None
+                file_app_name_dedup[kebabcase(app_name)] = None
+            file_app_names = list(file_app_name_dedup.keys())
+        else:
+            file_app_names = app_names
+
         conf_sources: List[ConfigurationSource] = [
             _extract_defaults_from_schema(schema)
         ]
@@ -198,80 +215,78 @@ class Config:
         conf_sources += [
             JsonConfigurationSource(
                 join(user_config_dir(app_name), "config.json"),
-                inject_at=app_name,
+                inject_at=kebabcase(app_name),
             )
-            for app_name in app_names
+            for app_name in file_app_names
         ]
         if _has_yaml():
             conf_sources += [
                 YamlConfigurationSource(
                     join(user_config_dir(app_name), "config.yml"),
-                    inject_at=app_name,
+                    inject_at=kebabcase(app_name),
                 )
-                for app_name in app_names
+                for app_name in file_app_names
             ]
             conf_sources += [
                 YamlConfigurationSource(
                     join(user_config_dir(app_name), "config.yaml"),
-                    inject_at=app_name,
+                    inject_at=kebabcase(app_name),
                 )
-                for app_name in app_names
+                for app_name in file_app_names
             ]
 
         if _has_toml():
             conf_sources += [
                 TomlConfigurationSource(
                     join(user_config_dir(app_name), "config.toml"),
-                    inject_at=app_name,
+                    inject_at=kebabcase(app_name),
                 )
-                for app_name in app_names
+                for app_name in file_app_names
             ]
 
         conf_sources += [
             JsonConfigurationSource(
                 join(getcwd(), f".{app_name}.json"),
-                inject_at=app_name,
+                inject_at=kebabcase(app_name),
             )
-            for app_name in app_names
+            for app_name in file_app_names
         ]
 
         if _has_yaml():
             conf_sources += [
                 YamlConfigurationSource(
                     join(getcwd(), f".{app_name}.yml"),
-                    inject_at=app_name,
+                    inject_at=kebabcase(app_name),
                 )
-                for app_name in app_names
+                for app_name in file_app_names
             ]
             conf_sources += [
                 YamlConfigurationSource(
                     join(getcwd(), f".{app_name}.yaml"),
-                    inject_at=app_name,
+                    inject_at=kebabcase(app_name),
                 )
-                for app_name in app_names
+                for app_name in file_app_names
             ]
 
         if _has_toml():
             conf_sources += [
                 TomlConfigurationSource(
                     join(getcwd(), f".{app_name}.toml"),
-                    inject_at=app_name,
+                    inject_at=kebabcase(app_name),
                 )
-                for app_name in app_names
+                for app_name in file_app_names
             ]
             conf_sources += [
                 TomlConfigurationSource(
                     join(getcwd(), ".pyproject.toml"),
                     f"tools.{app_name}",
-                    inject_at=app_name,
+                    inject_at=kebabcase(app_name),
                 )
-                for app_name in app_names
+                for app_name in file_app_names
             ]
 
         conf_sources += [
-            EnvironmentVariableSource(
-                _kebab_case_to_upper_train_case(app_name), separator="__"
-            )
+            EnvironmentVariableSource(macrocase(app_name), separator="__")
             for app_name in app_names
         ]
         conf_sources.append(
@@ -296,14 +311,6 @@ class Config:
         )
 
         return Config(config_dict=config_dict)
-
-
-def _kebab_case_to_upper_train_case(name: str) -> str:
-    return name.replace("-", "_").upper()
-
-
-# def _kebab_case_to_lower_train_case(name: str) -> str:
-#     return name.replace("-", "_").lower()
 
 
 def _has_yaml():
