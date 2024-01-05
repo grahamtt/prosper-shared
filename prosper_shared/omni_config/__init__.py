@@ -3,12 +3,12 @@
 import argparse
 from copy import deepcopy
 from decimal import Decimal
-from enum import Enum, EnumMeta
+from enum import Enum
 from importlib.util import find_spec
 from numbers import Number
 from os import getcwd
 from os.path import join
-from typing import List, Optional, Union
+from typing import List, Optional, Type, TypeVar, Union
 
 import dpath
 from caseconverter import camelcase, kebabcase, macrocase, snakecase
@@ -66,6 +66,8 @@ __all__ = [
     "YamlConfigurationSource",
     "get_config_help",
 ]
+
+_T = TypeVar("_T", Enum, object)
 
 
 class Config:
@@ -137,17 +139,17 @@ class Config:
         return False
 
     def get_as_enum(
-        self, key: str, enum_type: EnumMeta, default: Optional[Enum] = None
-    ) -> Optional[Enum]:
+        self, key: str, enum_type: Type[_T], default: Optional[_T] = None
+    ) -> Optional[_T]:
         """Gets a config value by enum name or value.
 
         Args:
             key (str): The named config to get.
-            enum_type (EnumMeta): Interpret the resulting value as an enum of this type.
-            default (Optional[Enum]): The value to return if the config key doesn't exist.
+            enum_type (Type[_T]): Interpret the resulting value as an enum of this type.
+            default (Optional[_T]): The value to return if the config key doesn't exist.
 
         Returns:
-            Optional[Enum]: The config value interpreted as the given enum type or the default value.
+            Optional[_T]: The config value interpreted as the given enum type or the default value.
         """
         value = self.get(key)
         if value is None:

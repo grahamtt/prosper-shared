@@ -49,6 +49,9 @@ TEST_SCHEMA = {
 class ContrivedEnum(Enum):
     KEY = "value"
 
+    def contrived_method(self):
+        return self.value
+
 
 class TestConfig:
     def test_get(self):
@@ -107,6 +110,7 @@ class TestConfig:
             "enum_config", ContrivedEnum, default=given_default
         )
         assert actual_value == expected_value
+        assert actual_value.contrived_method() == "value"
 
     def test_get_as_enum_unhappy(self):
         config = Config(config_dict={"enum_config": "BAD_KEY"})
