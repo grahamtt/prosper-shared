@@ -5,6 +5,7 @@ from argparse import BooleanOptionalAction, MetavarTypeHelpFormatter
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
 
+import caseconverter
 from schema import Optional as SchemaOptional
 from schema import Regex, SchemaError, SchemaWrongKeyError
 
@@ -161,7 +162,11 @@ def _arg_group_from_schema(
     schema: _SchemaType,
     arg_parser,
     treat_like_cli_exclusive_input: bool,
+    used_argument_names: set = None,
 ) -> None:
+    if used_argument_names is None:
+        used_argument_names = set()
+
     arg_group = None
     for k, v in schema.items():
         description = ""
@@ -182,6 +187,7 @@ def _arg_group_from_schema(
                 v,
                 arg_parser,
                 treat_like_cli_exclusive_input,
+                used_argument_names,
             )
         else:
             if not arg_group and path:
@@ -231,4 +237,8 @@ def _arg_group_from_schema(
                 # Produce a required positional argument for required input values that are arg-parse exclusive
                 arg_group.add_argument(**kwargs)
             else:
+                if k in used_argument_names:
+                    k = caseconverter.kebabcase(f"{path}__{k}")
+                used_argument_names.add(k)
+
                 arg_group.add_argument(f"--{k}", **kwargs)

@@ -112,6 +112,7 @@ class TestDefine:
                 "0123456789abcdef0123456789abcdef",
                 "--key5=KEY1",
                 "--no-gkey2",
+                "--group3-gkey5=asdf",
             ],
         )
 
@@ -129,7 +130,13 @@ class TestDefine:
                     ConfigKey("gkey4", "gkey4 desc", default="NOOOO"): str,
                 },
             },
-            "group3": {"group4": {ConfigKey("gkey5", "gkey5 desc"): int}},
+            "group3": {
+                "group4": {ConfigKey("gkey5", "gkey5 desc"): int},
+                ConfigKey(
+                    "gkey5",
+                    description="repeated leaf config name in a different context",
+                ): str,
+            },
         }
         test_input_schema = {
             ConfigKey("key6", "key6 desc"): str,
@@ -144,31 +151,36 @@ class TestDefine:
         assert actual_arg_parse.format_help() == (
             "usage: test-cli [-h] [--key1 KEY1] [--key2] [--key3 KEY3] [--key4]\n"
             "                [--key5 {KEY1,KEY2}] [--gkey1 GKEY1] [--gkey2 | --no-gkey2]\n"
-            "                [--gkey3] [--gkey4 GKEY4] [--gkey5 GKEY5] [--key7 KEY7]\n"
+            "                [--gkey3] [--gkey4 GKEY4] [--gkey5 GKEY5]\n"
+            "                [--group3-gkey5 GKEY5] [--key7 KEY7]\n"
             "                KEY6\n"
             "\n"
             "positional arguments:\n"
-            "  KEY6                 key6 desc; Type: str\n"
+            "  KEY6                  key6 desc; Type: str\n"
             "\n"
             "options:\n"
-            "  -h, --help           show this help message and exit\n"
-            "  --key1 KEY1          key1 desc; Type: str\n"
-            "  --key2               key2 desc; Type: bool\n"
-            "  --key3 KEY3          key3 desc; Type: str matching /regex_value/\n"
-            "  --key4               key4 desc; Type: bool\n"
-            "  --key5 {KEY1,KEY2}   key5 desc; Type: str; Default: KEY2\n"
-            "  --key7 KEY7          key7 desc; Type: str; Default: default_value\n"
+            "  -h, --help            show this help message and exit\n"
+            "  --key1 KEY1           key1 desc; Type: str\n"
+            "  --key2                key2 desc; Type: bool\n"
+            "  --key3 KEY3           key3 desc; Type: str matching /regex_value/\n"
+            "  --key4                key4 desc; Type: bool\n"
+            "  --key5 {KEY1,KEY2}    key5 desc; Type: str; Default: KEY2\n"
+            "  --key7 KEY7           key7 desc; Type: str; Default: default_value\n"
             "\n"
             "group1:\n"
-            "  --gkey1 GKEY1        gkey1 desc; Type: str\n"
-            "  --gkey2, --no-gkey2  gkey2 desc; Type: bool; Default: True\n"
+            "  --gkey1 GKEY1         gkey1 desc; Type: str\n"
+            "  --gkey2, --no-gkey2   gkey2 desc; Type: bool; Default: True\n"
             "\n"
             "group1.group2:\n"
-            "  --gkey3              gkey3 desc; Type: bool\n"
-            "  --gkey4 GKEY4        gkey4 desc; Type: str; Default: NOOOO\n"
+            "  --gkey3               gkey3 desc; Type: bool\n"
+            "  --gkey4 GKEY4         gkey4 desc; Type: str; Default: NOOOO\n"
             "\n"
             "group3.group4:\n"
-            "  --gkey5 GKEY5        gkey5 desc; Type: int\n"
+            "  --gkey5 GKEY5         gkey5 desc; Type: int\n"
+            "\n"
+            "group3:\n"
+            "  --group3-gkey5 GKEY5  repeated leaf config name in a different context;\n"
+            "                        Type: str\n"
         )
         assert actual_arg_parse.parse_args() == Namespace(
             key1=None,
@@ -181,6 +193,7 @@ class TestDefine:
             group1__group2__gkey3=False,
             group1__group2__gkey4=None,
             group3__group4__gkey5=None,
+            group3__gkey5="asdf",
             key6="0123456789abcdef0123456789abcdef",
             key7=None,
         )
