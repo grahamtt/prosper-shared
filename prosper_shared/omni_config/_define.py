@@ -135,14 +135,26 @@ def _arg_parse_from_schema(
     **kwargs,
 ) -> argparse.ArgumentParser:
     """Really simple schema->argparse converter."""
+    used_argument_names = set()
+    used_short_argument_names = set()
     arg_parser = argparse.ArgumentParser(
         prog_name, formatter_class=_NullRespectingMetavarTypeHelpFormatter, **kwargs
     )
     _arg_group_from_schema(
-        "", config_schema, arg_parser, treat_like_cli_exclusive_input=False
+        "",
+        config_schema,
+        arg_parser,
+        treat_like_cli_exclusive_input=False,
+        used_argument_names=used_argument_names,
+        used_short_argument_names=used_short_argument_names,
     )
     _arg_group_from_schema(
-        "", input_schema, arg_parser, treat_like_cli_exclusive_input=True
+        "",
+        input_schema,
+        arg_parser,
+        treat_like_cli_exclusive_input=True,
+        used_argument_names=used_argument_names,
+        used_short_argument_names=used_short_argument_names,
     )
     return arg_parser
 
@@ -162,11 +174,9 @@ def _arg_group_from_schema(
     schema: _SchemaType,
     arg_parser,
     treat_like_cli_exclusive_input: bool,
-    used_argument_names: set = None,
+    used_argument_names: set,
+    used_short_argument_names: set,
 ) -> None:
-    if used_argument_names is None:
-        used_argument_names = set()
-
     arg_group = None
     for k, v in schema.items():
         description = ""
@@ -188,6 +198,7 @@ def _arg_group_from_schema(
                 arg_parser,
                 treat_like_cli_exclusive_input,
                 used_argument_names,
+                used_short_argument_names,
             )
         else:
             if not arg_group and path:
@@ -240,5 +251,8 @@ def _arg_group_from_schema(
                 if k in used_argument_names:
                     k = caseconverter.kebabcase(f"{path}__{k}")
                 used_argument_names.add(k)
-
-                arg_group.add_argument(f"--{k}", **kwargs)
+                if k[0] not in used_short_argument_names:
+                    used_short_argument_names.add(k[0])
+                    arg_group.add_argument(f"-{k[0]}", f"--{k}", **kwargs)
+                else:
+                    arg_group.add_argument(f"--{k}", **kwargs)

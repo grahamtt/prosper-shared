@@ -149,8 +149,8 @@ class TestDefine:
         )
 
         assert actual_arg_parse.format_help() == (
-            "usage: test-cli [-h] [--key1 KEY1] [--key2] [--key3 KEY3] [--key4]\n"
-            "                [--key5 {KEY1,KEY2}] [--gkey1 GKEY1] [--gkey2 | --no-gkey2]\n"
+            "usage: test-cli [-h] [-k KEY1] [--key2] [--key3 KEY3] [--key4]\n"
+            "                [--key5 {KEY1,KEY2}] [-g GKEY1] [--gkey2 | --no-gkey2]\n"
             "                [--gkey3] [--gkey4 GKEY4] [--gkey5 GKEY5]\n"
             "                [--group3-gkey5 GKEY5] [--key7 KEY7]\n"
             "                KEY6\n"
@@ -160,7 +160,7 @@ class TestDefine:
             "\n"
             "options:\n"
             "  -h, --help            show this help message and exit\n"
-            "  --key1 KEY1           key1 desc; Type: str\n"
+            "  -k KEY1, --key1 KEY1  key1 desc; Type: str\n"
             "  --key2                key2 desc; Type: bool\n"
             "  --key3 KEY3           key3 desc; Type: str matching /regex_value/\n"
             "  --key4                key4 desc; Type: bool\n"
@@ -168,7 +168,8 @@ class TestDefine:
             "  --key7 KEY7           key7 desc; Type: str; Default: default_value\n"
             "\n"
             "group1:\n"
-            "  --gkey1 GKEY1         gkey1 desc; Type: str\n"
+            "  -g GKEY1, --gkey1 GKEY1\n"
+            "                        gkey1 desc; Type: str\n"
             "  --gkey2, --no-gkey2   gkey2 desc; Type: bool; Default: True\n"
             "\n"
             "group1.group2:\n"
