@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Dict, List
 
 import pytest
-from schema import Regex, SchemaError, SchemaWrongKeyError
+from schema import Or, Regex, SchemaError, SchemaWrongKeyError
 
 from prosper_shared.omni_config import (
     ConfigKey,
@@ -16,6 +16,7 @@ from prosper_shared.omni_config import (
 )
 from prosper_shared.omni_config._define import (
     _arg_parse_from_schema,
+    _fallback_type_builder,
     _realize_config_schemata,
     _realize_input_schemata,
 )
@@ -100,6 +101,10 @@ class TestDefine:
 
         assert _realize_input_schemata() == [self.TEST_INPUTS]
 
+    def test_fallback_type_builder_not_found(self):
+        with pytest.raises(TypeError):
+            _fallback_type_builder([int])("asdf")
+
     @pytest.mark.skipif(
         sys.version_info < (3, 10), reason="Argparse behavior changes after 3.9"
     )
@@ -113,6 +118,7 @@ class TestDefine:
                 "--key5=KEY1",
                 "--no-gkey2",
                 "--group3-gkey5=asdf",
+                "--key6=asdf",
             ],
         )
 
@@ -122,6 +128,7 @@ class TestDefine:
             ConfigKey("key3", "key3 desc"): Regex("regex_value"),
             ConfigKey("key4", "key4 desc", False): bool,
             ConfigKey("key5", "key5 desc", default=TestEnum.KEY2): TestEnum,
+            ConfigKey("key6", "key6 desc", default=TestEnum.KEY2): Or(TestEnum, str),
             "group1": {
                 ConfigKey("gkey1", description="gkey1 desc"): str,
                 ConfigKey("gkey2", "gkey2 desc", True): bool,
@@ -139,8 +146,8 @@ class TestDefine:
             },
         }
         test_input_schema = {
-            ConfigKey("key6", "key6 desc"): str,
-            ConfigKey("key7", "key7 desc", default="default_value"): str,
+            ConfigKey("key7", "key6 desc"): str,
+            ConfigKey("key8", "key7 desc", default="default_value"): str,
         }
 
         actual_arg_parse = _arg_parse_from_schema(
@@ -150,13 +157,13 @@ class TestDefine:
 
         assert actual_arg_parse.format_help() == (
             "usage: test-cli [-h] [-k KEY1] [--key2] [--key3 KEY3] [--key4]\n"
-            "                [--key5 {KEY1,KEY2}] [-g GKEY1] [--gkey2 | --no-gkey2]\n"
-            "                [--gkey3] [--gkey4 GKEY4] [--gkey5 GKEY5]\n"
-            "                [--group3-gkey5 GKEY5] [--key7 KEY7]\n"
-            "                KEY6\n"
+            "                [--key5 {KEY1,KEY2}] [--key6 {KEY1,KEY2,...any str}]\n"
+            "                [-g GKEY1] [--gkey2 | --no-gkey2] [--gkey3] [--gkey4 GKEY4]\n"
+            "                [--gkey5 GKEY5] [--group3-gkey5 GKEY5] [--key8 KEY8]\n"
+            "                KEY7\n"
             "\n"
             "positional arguments:\n"
-            "  KEY6                  key6 desc; Type: str\n"
+            "  KEY7                  key6 desc; Type: str\n"
             "\n"
             "options:\n"
             "  -h, --help            show this help message and exit\n"
@@ -165,7 +172,9 @@ class TestDefine:
             "  --key3 KEY3           key3 desc; Type: str matching /regex_value/\n"
             "  --key4                key4 desc; Type: bool\n"
             "  --key5 {KEY1,KEY2}    key5 desc; Type: str; Default: KEY2\n"
-            "  --key7 KEY7           key7 desc; Type: str; Default: default_value\n"
+            "  --key6 {KEY1,KEY2,...any str}\n"
+            "                        key6 desc; Type: str; Default: KEY2\n"
+            "  --key8 KEY8           key7 desc; Type: str; Default: default_value\n"
             "\n"
             "group1:\n"
             "  -g GKEY1, --gkey1 GKEY1\n"
@@ -189,14 +198,15 @@ class TestDefine:
             key3=None,
             key4=False,
             key5=TestEnum.KEY1,
+            key6="asdf",
             group1__gkey1=None,
             group1__gkey2=False,
             group1__group2__gkey3=False,
             group1__group2__gkey4=None,
             group3__group4__gkey5=None,
             group3__gkey5="asdf",
-            key6="0123456789abcdef0123456789abcdef",
-            key7=None,
+            key7="0123456789abcdef0123456789abcdef",
+            key8=None,
         )
 
     @pytest.mark.skipif(
