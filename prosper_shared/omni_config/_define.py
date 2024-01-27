@@ -1,13 +1,17 @@
 """Contains utility methods and classes for defining a config schema."""
 
 import argparse
+import logging
 from argparse import BooleanOptionalAction, MetavarTypeHelpFormatter
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import caseconverter
+from schema import And
 from schema import Optional as SchemaOptional
-from schema import Regex, SchemaError, SchemaWrongKeyError
+from schema import Or, Regex, SchemaError, SchemaWrongKeyError
+
+logger = logging.getLogger(__name__)
 
 
 class _ConfigKey:
@@ -181,7 +185,6 @@ def _arg_group_from_schema(
     for k, v in schema.items():
         description = ""
         default = None
-        options = None
 
         while isinstance(k, (_ConfigKey, SchemaOptional)):
             description = (
@@ -209,28 +212,17 @@ def _arg_group_from_schema(
                 raise ValueError(
                     f"No description provided for leaf config key {path}.{k}"
                 )
-            if isinstance(v, Regex):
-                constraint_desc = f"Type: str matching /{v.pattern_str}/"
-                v = str
-            elif callable(v):
-                constraint_desc = f"Type: {v.__name__}"
-            else:
-                raise ValueError(f"Invalid config value type: {type(v)}")
-
-            if Enum in v.__mro__:
-                constraint_desc = "Type: str"
-                options = list(e for e in v)
-                v = _key_to_enum_converter(v)
-
-            helps = [description, constraint_desc]
-            if default:
-                helps.append(f"Default: {default}")
+            v, options, constraint_desc = _resolve_type_options_and_constraint(v)
 
             action = "store"
             if v == bool and default is True:
                 action = BooleanOptionalAction
             elif v == bool:
                 action = "store_true"
+
+            helps = [description, f"Type: {constraint_desc}"]
+            if default:
+                helps.append(f"Default: {default}")
 
             kwargs = {
                 "dest": f"{path}__{k}" if path else k,
@@ -240,7 +232,7 @@ def _arg_group_from_schema(
             if v != bool:
                 kwargs["type"] = v
                 kwargs["metavar"] = k.upper()
-            if options:
+            if options != -1:
                 kwargs["metavar"] = None
                 kwargs["choices"] = options
 
@@ -256,3 +248,62 @@ def _arg_group_from_schema(
                     arg_group.add_argument(f"-{k[0]}", f"--{k}", **kwargs)
                 else:
                     arg_group.add_argument(f"--{k}", **kwargs)
+
+
+def _fallback_type_builder(types: List[type]) -> Any:
+    def _fallback_type(*args, **kwargs):
+        for t in types:
+            try:
+                return t(*args, **kwargs)
+            except (TypeError, ValueError):
+                logger.debug(
+                    f"Type {type.__name__} does not match positional args {args} and named args {kwargs}"
+                )
+        raise TypeError("None of the given types match")
+
+    return _fallback_type
+
+
+class _TypeMatchingOption:
+    def __init__(self, in_type):
+        self.in_type = in_type
+
+    def __str__(self):
+        return f"...any {self.in_type.__name__}"
+
+    def __eq__(self, input_val):
+        return isinstance(input_val, self.in_type)
+
+
+def _resolve_type_options_and_constraint(
+    value,
+) -> Tuple[_SchemaType, Union[int, List[Any]], str]:
+    options = -1
+    if isinstance(value, Regex):
+        constraint_desc = f"str matching /{value.pattern_str}/"
+        value = str
+    elif isinstance(value, (Or, And)):
+        zipped_result = zip(
+            *list(_resolve_type_options_and_constraint(v) for v in value.args)
+        )
+        values_list, options_list, constraint_desc_list = zipped_result
+        value = _fallback_type_builder(values_list)
+        options = []
+        for o in options_list:
+            if isinstance(o, list):
+                options += o
+        for v in values_list:
+            if v.__name__ != "key_to_enum":
+                options.append(_TypeMatchingOption(v))
+        constraint_desc = " OR ".join(set(constraint_desc_list))
+    elif callable(value):
+        constraint_desc = value.__name__
+    else:
+        raise ValueError(f"Invalid config value type: {type(value)}")
+
+    if hasattr(value, "__mro__") and Enum in value.__mro__:
+        constraint_desc = "str"
+        options = list(e for e in value)
+        value = _key_to_enum_converter(value)
+
+    return value, options, constraint_desc
