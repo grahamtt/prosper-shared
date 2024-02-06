@@ -4,6 +4,7 @@ import argparse
 from copy import deepcopy
 from decimal import Decimal
 from enum import Enum
+from importlib import import_module
 from importlib.util import find_spec
 from numbers import Number
 from os import getcwd
@@ -159,6 +160,23 @@ class Config:
             return enum_type[value]
 
         return enum_type(value)
+
+    def get_as_type(self, key: str, default: Optional[Type[_T]] = None) -> Optional[_T]:
+        """Gets a config value by enum name or value.
+
+        Args:
+            key (str): The named config to get.
+            default (Optional[Type[_T]]): The value to return if the config key doesn't exist.
+
+        Returns:
+            Optional[_T]: The config value interpreted as a type.
+        """
+        value = self.get(key)
+        if value is None:
+            return default
+
+        module_name, _, class_name = value.rpartition(".")
+        return getattr(import_module(module_name), class_name)
 
     @classmethod
     def autoconfig(

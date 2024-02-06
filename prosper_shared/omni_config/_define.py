@@ -4,6 +4,7 @@ import argparse
 import logging
 from argparse import BooleanOptionalAction, MetavarTypeHelpFormatter
 from enum import Enum
+from importlib import import_module
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import caseconverter
@@ -163,14 +164,54 @@ def _arg_parse_from_schema(
     return arg_parser
 
 
-def _key_to_enum_converter(enum):
+def _key_to_enum_validator(enum):
     def key_to_enum(key):
         try:
-            return enum[key]
+            assert enum[key] is not None  # Get the compiler off my back
+            return key
         except KeyError:
             raise TypeError(f"Unrecognized key {key} for enum {enum}")
 
     return key_to_enum
+
+
+def _key_to_type_validator(in_type):
+    def key_to_type(key):
+        try:
+            module_name, _, class_name = key.rpartition(".")
+            getattr(import_module(module_name), class_name)
+            return key
+        except Exception as e:
+            raise TypeError(f"Unrecognized type reference for type {in_type}: {key}", e)
+
+    key_to_type.__name__ = repr(in_type)
+
+    return key_to_type
+
+
+def _fallback_type_builder(types: List[type]) -> Any:
+    def _fallback_type(*args, **kwargs):
+        for t in types:
+            try:
+                return t(*args, **kwargs)
+            except (TypeError, ValueError):
+                logger.debug(
+                    f"Type {type.__name__} does not match positional args {args} and named args {kwargs}"
+                )
+        raise TypeError("None of the given types match")
+
+    return _fallback_type
+
+
+class _TypeMatchingOption:
+    def __init__(self, in_type):
+        self.in_type = in_type
+
+    def __str__(self):
+        return f"...any {self.in_type.__name__}"
+
+    def __eq__(self, input_val):
+        return isinstance(input_val, str)
 
 
 def _arg_group_from_schema(
@@ -250,31 +291,6 @@ def _arg_group_from_schema(
                     arg_group.add_argument(f"--{k}", **kwargs)
 
 
-def _fallback_type_builder(types: List[type]) -> Any:
-    def _fallback_type(*args, **kwargs):
-        for t in types:
-            try:
-                return t(*args, **kwargs)
-            except (TypeError, ValueError):
-                logger.debug(
-                    f"Type {type.__name__} does not match positional args {args} and named args {kwargs}"
-                )
-        raise TypeError("None of the given types match")
-
-    return _fallback_type
-
-
-class _TypeMatchingOption:
-    def __init__(self, in_type):
-        self.in_type = in_type
-
-    def __str__(self):
-        return f"...any {self.in_type.__name__}"
-
-    def __eq__(self, input_val):
-        return isinstance(input_val, self.in_type)
-
-
 def _resolve_type_options_and_constraint(
     value,
 ) -> Tuple[_SchemaType, Union[int, List[Any]], str]:
@@ -295,7 +311,7 @@ def _resolve_type_options_and_constraint(
         for v in values_list:
             if v.__name__ != "key_to_enum":
                 options.append(_TypeMatchingOption(v))
-        constraint_desc = " OR ".join(set(constraint_desc_list))
+        constraint_desc = " OR ".join(sorted(list(set(constraint_desc_list))))
     elif callable(value):
         constraint_desc = value.__name__
     else:
@@ -303,7 +319,11 @@ def _resolve_type_options_and_constraint(
 
     if hasattr(value, "__mro__") and Enum in value.__mro__:
         constraint_desc = "str"
-        options = list(e for e in value)
-        value = _key_to_enum_converter(value)
+        options = list(e.name for e in value)
+        value = _key_to_enum_validator(value)
+
+    if repr(value).startswith("typing.Type"):
+        constraint_desc = repr(value)  # TODO: constrain parent class
+        value = _key_to_type_validator(value)
 
     return value, options, constraint_desc

@@ -1,3 +1,4 @@
+import enum
 from decimal import Decimal
 from enum import Enum
 from os import getcwd
@@ -26,6 +27,7 @@ TEST_CONFIG = {
         "testBoolOther": {},
         "testDecimalString": "123.456",
         "testDecimalFloat": 123.456,
+        "testType": "enum.Enum",
     }
 }
 
@@ -42,6 +44,7 @@ TEST_SCHEMA = {
         "testBoolOther": {},
         "testDecimalString": "123.456",
         "testDecimalFloat": 123.456,
+        "testType": "enum.Enum",
     }
 }
 
@@ -116,6 +119,14 @@ class TestConfig:
         config = Config(config_dict={"enum_config": "BAD_KEY"})
         with pytest.raises(ValueError):
             config.get_as_enum("enum_config", ContrivedEnum)
+
+    def test_get_as_type(self):
+        config = Config(config_dict=TEST_CONFIG)
+
+        assert config.get_as_type("testSection.testType") == enum.Enum
+        assert (
+            config.get_as_type("testSection.nonexistentTypeKey", enum.Enum) == enum.Enum
+        )
 
     def test_get_invalid_key(self):
         config = Config(config_dict=TEST_CONFIG)

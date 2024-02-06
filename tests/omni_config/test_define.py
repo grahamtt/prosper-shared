@@ -1,7 +1,7 @@
 import sys
 from argparse import Namespace
 from enum import Enum
-from typing import Dict, List
+from typing import Dict, List, Type
 
 import pytest
 from schema import Or, Regex, SchemaError, SchemaWrongKeyError
@@ -28,6 +28,10 @@ class TestEnum(Enum):
 
     def __str__(self):
         return self.name
+
+
+class TestType:
+    pass
 
 
 class TestDefine:
@@ -119,6 +123,7 @@ class TestDefine:
                 "--no-gkey2",
                 "--group3-gkey5=asdf",
                 "--key6=asdf",
+                "--key7=enum.Enum",
             ],
         )
 
@@ -128,7 +133,10 @@ class TestDefine:
             ConfigKey("key3", "key3 desc"): Regex("regex_value"),
             ConfigKey("key4", "key4 desc", False): bool,
             ConfigKey("key5", "key5 desc", default=TestEnum.KEY2): TestEnum,
-            ConfigKey("key6", "key6 desc", default=TestEnum.KEY2): Or(TestEnum, str),
+            ConfigKey("key6", "key6 desc", default=TestEnum.KEY2): Or(
+                TestEnum, Type[TestType], str
+            ),
+            ConfigKey("key7", "key7 desc"): Type[TestType],
             "group1": {
                 ConfigKey("gkey1", description="gkey1 desc"): str,
                 ConfigKey("gkey2", "gkey2 desc", True): bool,
@@ -146,8 +154,8 @@ class TestDefine:
             },
         }
         test_input_schema = {
-            ConfigKey("key7", "key6 desc"): str,
-            ConfigKey("key8", "key7 desc", default="default_value"): str,
+            ConfigKey("inkey1", "inkey1 desc"): str,
+            ConfigKey("inkey2", "inkey2 desc", default="default_value"): str,
         }
 
         actual_arg_parse = _arg_parse_from_schema(
@@ -157,13 +165,16 @@ class TestDefine:
 
         assert actual_arg_parse.format_help() == (
             "usage: test-cli [-h] [-k KEY1] [--key2] [--key3 KEY3] [--key4]\n"
-            "                [--key5 {KEY1,KEY2}] [--key6 {KEY1,KEY2,...any str}]\n"
-            "                [-g GKEY1] [--gkey2 | --no-gkey2] [--gkey3] [--gkey4 GKEY4]\n"
-            "                [--gkey5 GKEY5] [--group3-gkey5 GKEY5] [--key8 KEY8]\n"
-            "                KEY7\n"
+            "                [--key5 {KEY1,KEY2}]\n"
+            "                [--key6 {KEY1,KEY2,...any "
+            "typing.Type[tests.omni_config.test_define.TestType],...any str}]\n"
+            "                [--key7 KEY7] [-g GKEY1] [--gkey2 | --no-gkey2] [--gkey3]\n"
+            "                [--gkey4 GKEY4] [--gkey5 GKEY5] [--group3-gkey5 GKEY5]\n"
+            "                [-i INKEY2]\n"
+            "                INKEY1\n"
             "\n"
             "positional arguments:\n"
-            "  KEY7                  key6 desc; Type: str\n"
+            "  INKEY1                inkey1 desc; Type: str\n"
             "\n"
             "options:\n"
             "  -h, --help            show this help message and exit\n"
@@ -172,9 +183,16 @@ class TestDefine:
             "  --key3 KEY3           key3 desc; Type: str matching /regex_value/\n"
             "  --key4                key4 desc; Type: bool\n"
             "  --key5 {KEY1,KEY2}    key5 desc; Type: str; Default: KEY2\n"
-            "  --key6 {KEY1,KEY2,...any str}\n"
-            "                        key6 desc; Type: str; Default: KEY2\n"
-            "  --key8 KEY8           key7 desc; Type: str; Default: default_value\n"
+            "  --key6 {KEY1,KEY2,...any "
+            "typing.Type[tests.omni_config.test_define.TestType],...any str}\n"
+            "                        key6 desc; Type: str OR\n"
+            "                        "
+            "typing.Type[tests.omni_config.test_define.TestType];\n"
+            "                        Default: KEY2\n"
+            "  --key7 KEY7           key7 desc; Type:\n"
+            "                        typing.Type[tests.omni_config.test_define.TestType]\n"
+            "  -i INKEY2, --inkey2 INKEY2\n"
+            "                        inkey2 desc; Type: str; Default: default_value\n"
             "\n"
             "group1:\n"
             "  -g GKEY1, --gkey1 GKEY1\n"
@@ -197,16 +215,17 @@ class TestDefine:
             key2=False,
             key3=None,
             key4=False,
-            key5=TestEnum.KEY1,
+            key5="KEY1",
             key6="asdf",
+            key7="enum.Enum",
             group1__gkey1=None,
             group1__gkey2=False,
             group1__group2__gkey3=False,
             group1__group2__gkey4=None,
             group3__group4__gkey5=None,
             group3__gkey5="asdf",
-            key7="0123456789abcdef0123456789abcdef",
-            key8=None,
+            inkey1="0123456789abcdef0123456789abcdef",
+            inkey2=None,
         )
 
     @pytest.mark.skipif(
