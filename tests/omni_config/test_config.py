@@ -11,8 +11,7 @@ from platformdirs import user_config_dir
 from schema import Optional as SchemaOptional
 from schema import Regex, SchemaError
 
-from prosper_shared.omni_config import Config, ConfigKey, get_config_help
-from prosper_shared.serde import _schema
+from prosper_shared.omni_config import Config, ConfigKey, config_schema, get_config_help
 
 TEST_CONFIG = {
     "testSection": {
@@ -47,6 +46,21 @@ TEST_SCHEMA = {
         "testType": "enum.Enum",
     }
 }
+
+
+@config_schema
+def register_test_schema():
+    return {
+        "prosper-shared": {
+            "test-schema": {
+                ConfigKey(
+                    "fly-a-kite",
+                    "Enjoyable side-effect.",
+                    default=True,
+                ): bool,
+            }
+        }
+    }
 
 
 class ContrivedEnum(Enum):
@@ -168,8 +182,7 @@ class TestConfig:
         ],
     )
     def test_autoconfig(self, mocker, given_app_names, expected_app_names):
-        _schema()  # Call to ensure the schema is registered
-
+        register_test_schema()
         mocker.patch("sys.exit")
         json_config_mock = mocker.patch(
             "prosper_shared.omni_config.JsonConfigurationSource"
@@ -232,8 +245,7 @@ class TestConfig:
     def test_autoconfig_dont_search_equivalent_files(
         self, mocker, given_app_names, expected_app_names
     ):
-        _schema()  # Call to ensure the schema is registered
-
+        register_test_schema()
         mocker.patch("sys.exit")
         json_config_mock = mocker.patch(
             "prosper_shared.omni_config.JsonConfigurationSource"
