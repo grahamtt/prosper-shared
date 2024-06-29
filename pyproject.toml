@@ -68,7 +68,6 @@ mode = "poetry"
 pre-commit = [
     "prosper_shared.autohooks.clean",
     "prosper_shared.autohooks.mdformat",
-    "prosper_shared.autohooks.build_extras",
     "prosper_shared.autohooks.autoimport",
     "autohooks.plugins.black",
     "autohooks.plugins.ruff",
@@ -92,12 +91,6 @@ metadata = false
 style = "semver"
 vcs = "git"
 bump = true
-
-[tool.autohooks.plugins.build_extras]
-commands = [
-    "poetry run jinja2 -Dconfig_options=\"`echo 'from prosper_shared.omni_config import get_config_help\nfrom prosper_shared.serde import *\nprint(get_config_help())\n' | python`\" README.md.jinja2 > README.md"
-]
-affected_files = ['README.md']
 
 [tool.autohooks.plugins.ruff]
 arguments = '--fix'
