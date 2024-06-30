@@ -1,6 +1,7 @@
 """Utility for declaring, parsing, merging, and validating configs."""
 
 import argparse
+import logging
 from copy import deepcopy
 from decimal import Decimal
 from enum import Enum
@@ -50,6 +51,8 @@ from prosper_shared.omni_config._parse import (
 from prosper_shared.omni_config._parse import (
     _YamlConfigurationSource as YamlConfigurationSource,
 )
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "Config",

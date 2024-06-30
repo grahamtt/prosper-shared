@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../prosper-api/.idea/prosper-api.iml" filepath="$PROJECT_DIR$/../prosper-api/.idea/prosper-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../prosper-bot/.idea/prosper-bot.iml" filepath="$PROJECT_DIR$/../prosper-bot/.idea/prosper-bot.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/prosper-shared.iml" filepath="$PROJECT_DIR$/.idea/prosper-shared.iml" />
     </modules>
   </component>

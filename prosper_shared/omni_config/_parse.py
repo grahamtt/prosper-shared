@@ -230,9 +230,7 @@ def _extract_defaults_from_schema(
             new_default = (
                 k.default
                 if hasattr(k, "default") and k.default is not None
-                else defaults[k.schema]
-                if k.schema in defaults
-                else None
+                else defaults[k.schema] if k.schema in defaults else None
             )
             if new_default is not None:
                 defaults[k.schema] = new_default
