@@ -1,9 +1,9 @@
 name: "build-and-release"
 
 on:
+  schedule:
+    - cron: "0 10 * * *" # Every day at 10
   push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   ci:
@@ -12,6 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [
+#          "3.8", # Some dev dependencies aren't supported
           "3.9",
           "3.10",
           "3.11",
@@ -36,10 +37,11 @@ jobs:
       - name: Install dependencies
         run: poetry install --all-extras
       - name: Run tests
-        run: poetry run pytest --no-cov
+        run: poetry run pytest
 
-  tagged-release: # TODO: Maybe make this conditional so it can run on pull requests
-    name: "Tagged Release"
+  code-coverage:
+    name: "Code coverage"
+    if: ${{ github.ref == 'refs/heads/main' }}
     needs: ci
     runs-on: "ubuntu-latest"
 
@@ -64,6 +66,27 @@ jobs:
         with:
           coverageCommand: poetry run pytest
           coverageLocations: ${{github.workspace}}/dist/coverage.info:lcov
+
+  tagged-release: # TODO: Maybe make this conditional so it can run on pull requests
+    name: "Tagged Release"
+    if: ${{ startsWith( github.ref, 'refs/tags/' ) }}
+    needs: ci
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+      - name: Run image
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: '1.6.1'
+      - name: Install dependencies
+        run: | 
+          poetry self add "poetry-dynamic-versioning[plugin]"
+          poetry install --all-extras
       - name: Build and publish package
         run: poetry publish --build --username __token__ --password ${{ secrets.PYPI_API_TOKEN }}
       - name: Create Github release
