@@ -22,7 +22,7 @@ from prosper_shared.omni_config._define import (
 )
 
 
-class TestEnum(Enum):
+class MyEnum(Enum):
     KEY1 = "VALUE1"
     KEY2 = "VALUE2"
 
@@ -132,9 +132,9 @@ class TestDefine:
             ConfigKey("key2", "key2 desc"): bool,
             ConfigKey("key3", "key3 desc"): Regex("regex_value"),
             ConfigKey("key4", "key4 desc", False): bool,
-            ConfigKey("key5", "key5 desc", default=TestEnum.KEY2): TestEnum,
-            ConfigKey("key6", "key6 desc", default=TestEnum.KEY2): Or(
-                TestEnum, Type[TestType], str
+            ConfigKey("key5", "key5 desc", default=MyEnum.KEY2): MyEnum,
+            ConfigKey("key6", "key6 desc", default=MyEnum.KEY2): Or(
+                MyEnum, Type[TestType], str
             ),
             ConfigKey("key7", "key7 desc"): Type[TestType],
             "group1": {
@@ -239,7 +239,7 @@ class TestDefine:
         )
 
         test_config_schema = {
-            ConfigKey("key5", "key5 desc", default=TestEnum.KEY2): TestEnum,
+            ConfigKey("key5", "key5 desc", default=MyEnum.KEY2): MyEnum,
         }
         test_input_schema = {}
 
