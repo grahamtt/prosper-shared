@@ -256,12 +256,15 @@ def _arg_group_from_schema(
             v, options, constraint_desc = _resolve_type_options_and_constraint(v)
 
             action = "store"
-            if v == bool and default is True:
+            if v is bool and default is True:
                 action = BooleanOptionalAction
-            elif v == bool:
+            elif v is bool:
                 action = "store_true"
 
-            helps = [description, f"Type: {constraint_desc}"]
+            helps = [
+                description[:-1] if description[-1] == "." else description,
+                f"Type: {constraint_desc}",
+            ]
             if default:
                 helps.append(f"Default: {default}")
 
@@ -270,7 +273,7 @@ def _arg_group_from_schema(
                 "help": "; ".join(helps),
                 "action": action,
             }
-            if v != bool:
+            if v is not bool:
                 kwargs["type"] = v
                 kwargs["metavar"] = k.upper()
             if options != -1:

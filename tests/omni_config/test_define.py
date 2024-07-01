@@ -128,12 +128,12 @@ class TestDefine:
         )
 
         test_config_schema = {
-            ConfigKey("key1", description="key1 desc"): str,
+            ConfigKey("key1", description="key1 desc."): str,
             ConfigKey("key2", "key2 desc"): bool,
             ConfigKey("key3", "key3 desc"): Regex("regex_value"),
             ConfigKey("key4", "key4 desc", False): bool,
             ConfigKey("key5", "key5 desc", default=MyEnum.KEY2): MyEnum,
-            ConfigKey("key6", "key6 desc", default=MyEnum.KEY2): Or(
+            ConfigKey("key6", "key6 desc.", default=MyEnum.KEY2): Or(
                 MyEnum, Type[TestType], str
             ),
             ConfigKey("key7", "key7 desc"): Type[TestType],
@@ -142,7 +142,7 @@ class TestDefine:
                 ConfigKey("gkey2", "gkey2 desc", True): bool,
                 "group2": {
                     ConfigKey("gkey3", "gkey3 desc"): bool,
-                    ConfigKey("gkey4", "gkey4 desc", default="NOOOO"): str,
+                    ConfigKey("gkey4", "gkey4 desc.", default="NOOOO"): str,
                 },
             },
             "group3": {
