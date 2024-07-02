@@ -112,7 +112,7 @@ class TestDefine:
     @pytest.mark.skipif(
         sys.version_info < (3, 10), reason="Argparse behavior changes after 3.9"
     )
-    def test_arg_parse_from_schema(self, mocker):
+    def test_arg_parse_from_schema(self, mocker, snapshot):
         mocker.patch.object(
             sys,
             "argv",
@@ -163,53 +163,7 @@ class TestDefine:
             test_input_schema,
         )
 
-        assert actual_arg_parse.format_help() == (
-            "usage: test-cli [-h] [-k KEY1] [--key2] [--key3 KEY3] [--key4]\n"
-            "                [--key5 {KEY1,KEY2}]\n"
-            "                [--key6 {KEY1,KEY2,...any "
-            "typing.Type[tests.omni_config.test_define.TestType],...any str}]\n"
-            "                [--key7 KEY7] [-g GKEY1] [--gkey2 | --no-gkey2] [--gkey3]\n"
-            "                [--gkey4 GKEY4] [--gkey5 GKEY5] [--group3-gkey5 GKEY5]\n"
-            "                [-i INKEY2]\n"
-            "                INKEY1\n"
-            "\n"
-            "positional arguments:\n"
-            "  INKEY1                inkey1 desc; Type: str\n"
-            "\n"
-            "options:\n"
-            "  -h, --help            show this help message and exit\n"
-            "  -k KEY1, --key1 KEY1  key1 desc; Type: str\n"
-            "  --key2                key2 desc; Type: bool\n"
-            "  --key3 KEY3           key3 desc; Type: str matching /regex_value/\n"
-            "  --key4                key4 desc; Type: bool\n"
-            "  --key5 {KEY1,KEY2}    key5 desc; Type: str; Default: KEY2\n"
-            "  --key6 {KEY1,KEY2,...any "
-            "typing.Type[tests.omni_config.test_define.TestType],...any str}\n"
-            "                        key6 desc; Type: str OR\n"
-            "                        "
-            "typing.Type[tests.omni_config.test_define.TestType];\n"
-            "                        Default: KEY2\n"
-            "  --key7 KEY7           key7 desc; Type:\n"
-            "                        typing.Type[tests.omni_config.test_define.TestType]\n"
-            "  -i INKEY2, --inkey2 INKEY2\n"
-            "                        inkey2 desc; Type: str; Default: default_value\n"
-            "\n"
-            "group1:\n"
-            "  -g GKEY1, --gkey1 GKEY1\n"
-            "                        gkey1 desc; Type: str\n"
-            "  --gkey2, --no-gkey2   gkey2 desc; Type: bool; Default: True\n"
-            "\n"
-            "group1.group2:\n"
-            "  --gkey3               gkey3 desc; Type: bool\n"
-            "  --gkey4 GKEY4         gkey4 desc; Type: str; Default: NOOOO\n"
-            "\n"
-            "group3.group4:\n"
-            "  --gkey5 GKEY5         gkey5 desc; Type: int\n"
-            "\n"
-            "group3:\n"
-            "  --group3-gkey5 GKEY5  repeated leaf config name in a different context;\n"
-            "                        Type: str\n"
-        )
+        assert actual_arg_parse.format_help() == snapshot
         assert actual_arg_parse.parse_args() == Namespace(
             key1=None,
             key2=False,
