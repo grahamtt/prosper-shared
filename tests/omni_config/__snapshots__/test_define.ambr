@@ -1,0 +1,48 @@
+# serializer version: 1
+# name: TestDefine.test_arg_parse_from_schema
+  '''
+  usage: test-cli [-h] [-k KEY1] [--key2] [--key3 KEY3] [--key4]
+                  [--key5 {KEY1,KEY2}]
+                  [--key6 {KEY1,KEY2,...any typing.Type[tests.omni_config.test_define.TestType],...any str}]
+                  [--key7 KEY7] [-g GKEY1] [--gkey2 | --no-gkey2] [--gkey3]
+                  [--gkey4 GKEY4] [--gkey5 GKEY5] [--group3-gkey5 GKEY5]
+                  [-i INKEY2]
+                  INKEY1
+  
+  positional arguments:
+    INKEY1                inkey1 desc; Type: str
+  
+  options:
+    -h, --help            show this help message and exit
+    -k KEY1, --key1 KEY1  key1 desc; Type: str
+    --key2                key2 desc; Type: bool
+    --key3 KEY3           key3 desc; Type: str matching /regex_value/
+    --key4                key4 desc; Type: bool
+    --key5 {KEY1,KEY2}    key5 desc; Type: str; Default: KEY2
+    --key6 {KEY1,KEY2,...any typing.Type[tests.omni_config.test_define.TestType],...any str}
+                          key6 desc; Type: str OR
+                          typing.Type[tests.omni_config.test_define.TestType];
+                          Default: KEY2
+    --key7 KEY7           key7 desc; Type:
+                          typing.Type[tests.omni_config.test_define.TestType]
+    -i INKEY2, --inkey2 INKEY2
+                          inkey2 desc; Type: str; Default: default_value
+  
+  group1:
+    -g GKEY1, --gkey1 GKEY1
+                          gkey1 desc; Type: str
+    --gkey2, --no-gkey2   gkey2 desc; Type: bool; Default: True
+  
+  group1.group2:
+    --gkey3               gkey3 desc; Type: bool
+    --gkey4 GKEY4         gkey4 desc; Type: str; Default: NOOOO
+  
+  group3.group4:
+    --gkey5 GKEY5         gkey5 desc; Type: int
+  
+  group3:
+    --group3-gkey5 GKEY5  repeated leaf config name in a different context;
+                          Type: str
+  
+  '''
+# ---
