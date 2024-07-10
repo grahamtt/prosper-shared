@@ -176,9 +176,7 @@ class TestConfig:
     @pytest.mark.parametrize(
         ["given_app_names", "expected_app_names"],
         [
-            (["app-name1", "app_name2"], ["app-name1", "app-name2"]),
             ("app-name", ["app-name"]),
-            (None, ["prosper-shared"]),
         ],
     )
     def test_autoconfig(self, mocker, given_app_names, expected_app_names):
@@ -237,9 +235,7 @@ class TestConfig:
     @pytest.mark.parametrize(
         ["given_app_names", "expected_app_names"],
         [
-            (["app-name1", "app_name2"], ["app-name1", "app_name2"]),
             ("app-name", ["app-name"]),
-            (None, ["prosper-shared"]),
         ],
     )
     def test_autoconfig_dont_search_equivalent_files(

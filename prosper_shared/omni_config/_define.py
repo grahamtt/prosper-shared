@@ -2,12 +2,16 @@
 
 import argparse
 import logging
+import shlex
 from argparse import BooleanOptionalAction, MetavarTypeHelpFormatter
 from enum import Enum
 from importlib import import_module
+from os import getcwd
+from os.path import join
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import caseconverter
+from platformdirs import user_config_dir
 from schema import And
 from schema import Optional as SchemaOptional
 from schema import Or, Regex, SchemaError, SchemaWrongKeyError
@@ -136,14 +140,26 @@ class _NullRespectingMetavarTypeHelpFormatter(MetavarTypeHelpFormatter):
 def _arg_parse_from_schema(
     config_schema: _SchemaType,
     input_schema: _SchemaType,
-    prog_name: Optional[str] = None,
+    prog_name: str,
     **kwargs,
 ) -> argparse.ArgumentParser:
     """Really simple schema->argparse converter."""
     used_argument_names = set()
     used_short_argument_names = set()
+    config_dir_path = shlex.quote(
+        join(user_config_dir(prog_name), "config.{json|yml|yaml|toml}")
+    )
+    cwd_dir_path = shlex.quote(join(getcwd(), f"{prog_name}.{{json|yml|yaml|toml}}"))
+    pyproject_path = shlex.quote(join(getcwd(), ".pyproject.toml"))
+
     arg_parser = argparse.ArgumentParser(
-        prog_name, formatter_class=_NullRespectingMetavarTypeHelpFormatter, **kwargs
+        prog_name,
+        formatter_class=_NullRespectingMetavarTypeHelpFormatter,
+        description=(
+            f"All optional program arguments can be provided via configuration file at the following locations: "
+            f"{config_dir_path},{cwd_dir_path},{pyproject_path}."
+        ),
+        **kwargs,
     )
     _arg_group_from_schema(
         "",

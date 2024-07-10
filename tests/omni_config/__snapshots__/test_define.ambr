@@ -9,6 +9,11 @@
                   [-i INKEY2]
                   INKEY1
   
+  All optional program arguments can be provided via configuration file at the
+  following locations: '/config_dir/dir/test-
+  cli/config.{json|yml|yaml|toml}','/cwd/dir/test-
+  cli.{json|yml|yaml|toml}',/cwd/dir/.pyproject.toml.
+  
   positional arguments:
     INKEY1                inkey1 desc; Type: str
   

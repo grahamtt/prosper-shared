@@ -184,7 +184,7 @@ class Config:
     @classmethod
     def autoconfig(
         cls,
-        app_names: Union[None, str, List[str]] = None,
+        app_name: str,
         arg_parse: argparse.ArgumentParser = None,
         validate: bool = False,
         search_equivalent_names: bool = True,
@@ -203,7 +203,7 @@ class Config:
         Config values found lower in the chain will override previous values for the same key.
 
         Args:
-            app_names (Union[None, str, List[str]]): An ordered list of app names for which look for configs.
+            app_name (str): An ordered list of app names for which look for configs.
             arg_parse (argparse.ArgumentParser): A pre-configured argparse instance.
             validate (bool): Whether to validate the config prior to returning it.
             search_equivalent_names (bool): Whether equivalent names to the given app names should be included in the
@@ -216,20 +216,15 @@ class Config:
         input_schemata = merge_config(_realize_input_schemata())
         schema = merge_config([config_schemata, input_schemata])
 
-        if app_names is None:
-            app_names = [k for k in config_schemata]
-        elif isinstance(app_names, str):
-            app_names = [app_names]
-
         if search_equivalent_names:
-            file_app_name_dedup = {}
-            for app_name in app_names:
-                file_app_name_dedup[camelcase(app_name)] = None
-                file_app_name_dedup[snakecase(app_name)] = None
-                file_app_name_dedup[kebabcase(app_name)] = None
+            file_app_name_dedup = {
+                camelcase(app_name): None,
+                snakecase(app_name): None,
+                kebabcase(app_name): None,
+            }
             file_app_names = list(file_app_name_dedup.keys())
         else:
-            file_app_names = app_names
+            file_app_names = [app_name]
 
         conf_sources: List[ConfigurationSource] = [
             _extract_defaults_from_schema(schema)
@@ -308,18 +303,16 @@ class Config:
                 for app_name in file_app_names
             ]
 
-        conf_sources += [
-            EnvironmentVariableSource(macrocase(app_name), separator="__")
-            for app_name in app_names
-        ]
+        conf_sources += [EnvironmentVariableSource(macrocase(app_name), separator="__")]
         conf_sources.append(
             ArgParseSource(
-                arg_parse
-                if arg_parse
-                else arg_parse_from_schema(
-                    config_schemata,
-                    input_schemata,
-                )
+                (
+                    arg_parse
+                    if arg_parse
+                    else arg_parse_from_schema(
+                        config_schemata, input_schemata, app_name
+                    )
+                ),
             )
         )
 

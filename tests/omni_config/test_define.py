@@ -21,6 +21,8 @@ from prosper_shared.omni_config._define import (
     _realize_input_schemata,
 )
 
+PROG_NAME = "test-cli"
+
 
 class MyEnum(Enum):
     KEY1 = "VALUE1"
@@ -117,7 +119,7 @@ class TestDefine:
             sys,
             "argv",
             [
-                "test-cli",
+                PROG_NAME,
                 "0123456789abcdef0123456789abcdef",
                 "--key5=KEY1",
                 "--no-gkey2",
@@ -126,6 +128,11 @@ class TestDefine:
                 "--key7=enum.Enum",
             ],
         )
+        mocker.patch(
+            "prosper_shared.omni_config._define.user_config_dir",
+            lambda i: f"/config_dir/dir/{i}",
+        )
+        mocker.patch("prosper_shared.omni_config._define.getcwd", lambda: "/cwd/dir")
 
         test_config_schema = {
             ConfigKey("key1", description="key1 desc."): str,
@@ -159,8 +166,7 @@ class TestDefine:
         }
 
         actual_arg_parse = _arg_parse_from_schema(
-            test_config_schema,
-            test_input_schema,
+            test_config_schema, test_input_schema, PROG_NAME
         )
 
         assert actual_arg_parse.format_help() == snapshot
@@ -199,7 +205,7 @@ class TestDefine:
 
         with pytest.raises(SystemExit):
             actual_arg_parse = _arg_parse_from_schema(
-                test_config_schema, test_input_schema
+                test_config_schema, test_input_schema, "test-prog"
             )
             actual_arg_parse.parse_args()
 
@@ -209,7 +215,7 @@ class TestDefine:
         }
 
         with pytest.raises(ValueError):
-            _arg_parse_from_schema(test_schema, {})
+            _arg_parse_from_schema(test_schema, {}, PROG_NAME)
 
     def test_arg_parse_from_schema_if_type_not_callable(self):
         test_schema = {
@@ -217,7 +223,7 @@ class TestDefine:
         }
 
         with pytest.raises(ValueError):
-            _arg_parse_from_schema(test_schema, {})
+            _arg_parse_from_schema(test_schema, {}, PROG_NAME)
 
     def test_config_key_str(self):
         assert (
