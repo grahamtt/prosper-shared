@@ -399,7 +399,6 @@ class TestConfig:
                         join(
                             user_config_dir(camelcase(app_name)), f"config.{extension}"
                         ),
-                        inject_at=app_name,
                     )
                 )
                 calls.append(
@@ -407,7 +406,6 @@ class TestConfig:
                         join(
                             user_config_dir(snakecase(app_name)), f"config.{extension}"
                         ),
-                        inject_at=app_name,
                     )
                 )
                 calls.append(
@@ -415,25 +413,21 @@ class TestConfig:
                         join(
                             user_config_dir(kebabcase(app_name)), f"config.{extension}"
                         ),
-                        inject_at=app_name,
                     )
                 )
                 calls.append(
                     mocker.call(
                         join(getcwd(), f".{camelcase(app_name)}.{extension}"),
-                        inject_at=app_name,
                     )
                 )
                 calls.append(
                     mocker.call(
                         join(getcwd(), f".{snakecase(app_name)}.{extension}"),
-                        inject_at=app_name,
                     )
                 )
                 calls.append(
                     mocker.call(
                         join(getcwd(), f".{kebabcase(app_name)}.{extension}"),
-                        inject_at=app_name,
                     )
                 )
                 if extension == "toml":
@@ -468,13 +462,11 @@ class TestConfig:
                 calls.append(
                     mocker.call(
                         join(user_config_dir(app_name), f"config.{extension}"),
-                        inject_at=kebabcase(app_name),
                     )
                 )
                 calls.append(
                     mocker.call(
                         join(getcwd(), f".{app_name}.{extension}"),
-                        inject_at=kebabcase(app_name),
                     )
                 )
                 if extension == "toml":

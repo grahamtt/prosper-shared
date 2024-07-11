@@ -233,7 +233,6 @@ class Config:
         conf_sources += [
             JsonConfigurationSource(
                 join(user_config_dir(app_name), "config.json"),
-                inject_at=kebabcase(app_name),
             )
             for app_name in file_app_names
         ]
@@ -241,14 +240,12 @@ class Config:
             conf_sources += [
                 YamlConfigurationSource(
                     join(user_config_dir(app_name), "config.yml"),
-                    inject_at=kebabcase(app_name),
                 )
                 for app_name in file_app_names
             ]
             conf_sources += [
                 YamlConfigurationSource(
                     join(user_config_dir(app_name), "config.yaml"),
-                    inject_at=kebabcase(app_name),
                 )
                 for app_name in file_app_names
             ]
@@ -257,7 +254,6 @@ class Config:
             conf_sources += [
                 TomlConfigurationSource(
                     join(user_config_dir(app_name), "config.toml"),
-                    inject_at=kebabcase(app_name),
                 )
                 for app_name in file_app_names
             ]
@@ -265,7 +261,6 @@ class Config:
         conf_sources += [
             JsonConfigurationSource(
                 join(getcwd(), f".{app_name}.json"),
-                inject_at=kebabcase(app_name),
             )
             for app_name in file_app_names
         ]
@@ -274,14 +269,12 @@ class Config:
             conf_sources += [
                 YamlConfigurationSource(
                     join(getcwd(), f".{app_name}.yml"),
-                    inject_at=kebabcase(app_name),
                 )
                 for app_name in file_app_names
             ]
             conf_sources += [
                 YamlConfigurationSource(
                     join(getcwd(), f".{app_name}.yaml"),
-                    inject_at=kebabcase(app_name),
                 )
                 for app_name in file_app_names
             ]
@@ -290,7 +283,6 @@ class Config:
             conf_sources += [
                 TomlConfigurationSource(
                     join(getcwd(), f".{app_name}.toml"),
-                    inject_at=kebabcase(app_name),
                 )
                 for app_name in file_app_names
             ]
