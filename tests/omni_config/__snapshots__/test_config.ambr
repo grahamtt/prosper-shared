@@ -1,0 +1,48 @@
+# serializer version: 1
+# name: TestConfig.test_get_config_help
+  '''
+  [".key1"]
+  type = "str"
+  optional = false
+  description = "key1 desc"
+  
+  [".key2"]
+  type = "bool"
+  optional = true
+  description = "key2 desc"
+  
+  [".key3"]
+  type = "str"
+  optional = false
+  constraint = "regex_value"
+  description = "key3 desc"
+  
+  [".key4"]
+  type = "bool"
+  optional = false
+  description = "key4 desc"
+  
+  ["group1.gkey1"]
+  type = "str"
+  optional = false
+  description = "gkey1 desc"
+  
+  ["group1.gkey2"]
+  type = "bool"
+  optional = false
+  default = true
+  description = "gkey3 desc"
+  
+  [".key6"]
+  type = "str"
+  optional = false
+  description = "key6 desc"
+  
+  [".key7"]
+  type = "str"
+  optional = false
+  default = "default_value"
+  description = "key7 desc"
+  
+  '''
+# ---
