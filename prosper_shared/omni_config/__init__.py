@@ -13,6 +13,7 @@ from os.path import join
 from typing import List, Optional, Type, TypeVar, Union
 
 import dpath
+import toml
 from caseconverter import camelcase, kebabcase, macrocase, snakecase
 from platformdirs import user_config_dir
 from schema import Optional as SchemaOptional
@@ -344,7 +345,7 @@ def get_config_help():
     schema = merge_config([config_schemata, input_schemata])
     help_struct = _build_help_struct(schema)
 
-    return yaml.dump(help_struct, width=94)
+    return toml.dumps(help_struct)
 
 
 def _build_help_struct(

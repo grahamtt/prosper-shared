@@ -293,7 +293,7 @@ class TestConfig:
             any_order=False,
         )
 
-    def test_get_config_help(self, mocker):
+    def test_get_config_help(self, mocker, snapshot):
         test_config_schema = {
             ConfigKey("key1", description="key1 desc"): str,
             SchemaOptional(ConfigKey("key2", "key2 desc", default=False)): bool,
@@ -317,43 +317,7 @@ class TestConfig:
         realize_config_schemata_mock.return_value = [test_config_schema]
         realize_input_schemata_mock.return_value = [test_input_schema]
 
-        assert get_config_help() == (
-            ".key1:\n"
-            "  description: key1 desc\n"
-            "  optional: false\n"
-            "  type: str\n"
-            ".key2:\n"
-            "  description: key2 desc\n"
-            "  optional: true\n"
-            "  type: bool\n"
-            ".key3:\n"
-            "  constraint: regex_value\n"
-            "  description: key3 desc\n"
-            "  optional: false\n"
-            "  type: str\n"
-            ".key4:\n"
-            "  description: key4 desc\n"
-            "  optional: false\n"
-            "  type: bool\n"
-            ".key6:\n"
-            "  description: key6 desc\n"
-            "  optional: false\n"
-            "  type: str\n"
-            ".key7:\n"
-            "  default: default_value\n"
-            "  description: key7 desc\n"
-            "  optional: false\n"
-            "  type: str\n"
-            "group1.gkey1:\n"
-            "  description: gkey1 desc\n"
-            "  optional: false\n"
-            "  type: str\n"
-            "group1.gkey2:\n"
-            "  default: true\n"
-            "  description: gkey3 desc\n"
-            "  optional: false\n"
-            "  type: bool\n"
-        )
+        assert get_config_help() == snapshot
 
     def test_get_config_help_no_description(self, mocker):
         test_config_schema = {
