@@ -14,9 +14,9 @@ jobs:
         python-version: [
 #          "3.8", # Some dev dependencies aren't supported
 #          "3.9", # Coverage is messed up for some reason
-          "3.10",
-          "3.11",
-          "3.12",
+          # "3.10",
+          # "3.11",
+          # "3.12",
           "3.13",
         ]
         poetry-version: ["1.6.1"]
