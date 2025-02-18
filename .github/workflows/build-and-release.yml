@@ -107,6 +107,8 @@ jobs:
       
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Increment version
         uses: python-semantic-release/python-semantic-release@v9.20.0
         with:
