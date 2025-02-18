@@ -98,7 +98,7 @@ jobs:
           coverageLocations: ${{github.workspace}}/dist/coverage.info:lcov
 
   bump-version:
-    name: "Code coverage"
+    name: "Bump minor version"
     if: ${{ github.ref == 'refs/heads/main' }}
     needs: code-coverage
     runs-on: "ubuntu-latest"
