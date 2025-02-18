@@ -128,6 +128,9 @@ jobs:
     needs: bump-version
     runs-on: "ubuntu-latest"
 
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -149,7 +152,7 @@ jobs:
       - name: Create Github release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          repo_token: "${{ secrets.RELEASE_TOKEN }}"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
             dist/*.whl
