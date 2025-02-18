@@ -5,3 +5,5 @@ dist/
 
 /**/.coverage
 .mutmut-cache
+
+.DS_Store

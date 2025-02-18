@@ -111,8 +111,9 @@ class TestDefine:
         with pytest.raises(TypeError):
             _fallback_type_builder([int])("asdf")
 
-    @pytest.mark.skipif(
-        sys.version_info < (3, 10), reason="Argparse behavior changes after 3.9"
+    @pytest.mark.xfail(
+        sys.version_info < (3, 10) or sys.version_info > (3, 12),
+        reason="Argparse behavior changes after 3.9 and after 3.13",
     )
     def test_arg_parse_from_schema(self, mocker, snapshot):
         mocker.patch.object(
@@ -188,7 +189,7 @@ class TestDefine:
             inkey2=None,
         )
 
-    @pytest.mark.skipif(
+    @pytest.mark.xfail(
         sys.version_info < (3, 10), reason="Argparse behavior changes after 3.9"
     )
     def test_arg_parse_from_schema_when_bad_cli_value(self, mocker):
