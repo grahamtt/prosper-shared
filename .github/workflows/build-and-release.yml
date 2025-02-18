@@ -72,7 +72,6 @@ jobs:
   code-coverage:
     name: "Code coverage"
     if: ${{ github.ref == 'refs/heads/main' }}
-    needs: ci
     runs-on: "ubuntu-latest"
 
     steps:
